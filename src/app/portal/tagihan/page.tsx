@@ -2,26 +2,13 @@
 
 import React, { useState } from "react";
 import { useKost } from "@/lib/kost-context";
-import {
-  Receipt,
-  Upload,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-  Copy,
-  QrCode,
-  CreditCard,
-  Building2,
-  FileCheck,
-  Printer
-} from "lucide-react";
+import { Copy, Upload, Check } from "lucide-react";
 
 export default function TenantTagihanPage() {
   const { building, currentUser, tenants, invoices, updateInvoiceStatus } = useKost();
 
   const tenant = tenants.find((t) => t.id === currentUser.tenantId) || tenants[0];
   const myInvoices = invoices.filter((i) => i.roomNumber === tenant?.roomNumber || i.tenantPhone === tenant?.phone);
-
   const activeInvoice = myInvoices.find((i) => i.status === "UNPAID" || i.status === "PENDING_VERIFICATION") || myInvoices[0];
 
   const [paymentMethod, setPaymentMethod] = useState("Transfer BCA");
@@ -43,122 +30,97 @@ export default function TenantTagihanPage() {
       updateInvoiceStatus(activeInvoice.id, "PENDING_VERIFICATION", proofUrl, paymentMethod);
       setIsSubmitting(false);
       setSuccessMessage(true);
-    }, 600);
+    }, 400);
   };
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
+    <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-          Bayar & Kelola Tagihan Sewa
+      <div className="pb-6 border-b border-zinc-800/80">
+        <h1 className="text-xl font-semibold text-white tracking-tight">
+          Bayar & Tagihan Sewa
         </h1>
-        <p className="text-xs sm:text-sm text-zinc-400 mt-1">
-          Lakukan pembayaran sewa bulanan dan unggah bukti transfer untuk diverifikasi oleh pengelola.
+        <p className="text-xs text-zinc-400 mt-0.5">
+          Pembayaran sewa bulanan dan konfirmasi transfer.
         </p>
       </div>
 
       {successMessage && (
-        <div className="p-4 rounded-2xl bg-emerald-950/30 border border-emerald-500/40 text-emerald-300 text-xs font-semibold flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-            <span>Bukti transfer berhasil diunggah! Status sekarang menunggu konfirmasi dari pengelola.</span>
-          </div>
-          <button onClick={() => setSuccessMessage(false)} className="text-xs underline font-bold">
-            Tutup
-          </button>
+        <div className="p-3 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 text-xs flex items-center justify-between">
+          <span>✓ Bukti transfer telah terkirim ke pengelola untuk diverifikasi.</span>
+          <button onClick={() => setSuccessMessage(false)} className="text-zinc-500 hover:text-white">Tutup</button>
         </div>
       )}
 
-      {/* Main Billing Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Cols: Active Invoice & Upload Form */}
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Left 2 Cols: Active Bill */}
+        <div className="lg:col-span-2 space-y-5">
           {activeInvoice ? (
-            <div className="p-6 sm:p-8 rounded-3xl bg-zinc-900/80 border border-white/10 space-y-6">
-              {/* Header Card */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10">
+            <div className="p-5 rounded-xl bg-zinc-900/40 border border-zinc-800/80 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-zinc-800/60 text-xs">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
-                    Invoice Periode
+                  <span className="font-semibold text-white text-sm">
+                    Tagihan {activeInvoice.periodMonth} {activeInvoice.periodYear}
                   </span>
-                  <h2 className="text-xl font-black text-white mt-0.5">
-                    {activeInvoice.periodMonth} {activeInvoice.periodYear}
-                  </h2>
-                  <p className="text-xs text-zinc-400 font-mono mt-0.5">{activeInvoice.invoiceNumber}</p>
+                  <p className="text-zinc-500 font-mono text-[11px]">{activeInvoice.invoiceNumber}</p>
                 </div>
-
                 <div className="text-right">
                   <span
-                    className={`inline-block px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider ${
+                    className={`text-[10px] px-2 py-0.5 rounded font-medium ${
                       activeInvoice.status === "PAID"
-                        ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                        ? "bg-emerald-950/60 text-emerald-400 border border-emerald-900/60"
                         : activeInvoice.status === "PENDING_VERIFICATION"
-                        ? "bg-sky-500/20 text-sky-300 border border-sky-500/30"
-                        : "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                        ? "bg-amber-950/60 text-amber-300 border border-amber-900/60"
+                        : "bg-zinc-800 text-zinc-300"
                     }`}
                   >
-                    {activeInvoice.status === "PAID"
-                      ? "✓ Lunas"
-                      : activeInvoice.status === "PENDING_VERIFICATION"
-                      ? "Menunggu Verifikasi"
-                      : "Belum Dibayar"}
+                    {activeInvoice.status === "PAID" ? "Lunas" : activeInvoice.status === "PENDING_VERIFICATION" ? "Menunggu Verifikasi" : "Belum Bayar"}
                   </span>
-                  <p className="text-[11px] text-zinc-400 mt-1">
-                    Jatuh tempo: <strong className="text-white">{activeInvoice.dueDate}</strong>
-                  </p>
+                  <p className="text-[11px] text-zinc-500 mt-0.5">Jatuh tempo: {activeInvoice.dueDate}</p>
                 </div>
               </div>
 
-              {/* Price Breakdown */}
-              <div className="space-y-2 text-xs">
+              <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between text-zinc-400">
                   <span>Sewa Kamar {activeInvoice.roomNumber}</span>
-                  <span className="text-white font-semibold">Rp {activeInvoice.amount.toLocaleString("id-ID")}</span>
+                  <span className="text-white font-medium">Rp {activeInvoice.amount.toLocaleString("id-ID")}</span>
                 </div>
                 <div className="flex justify-between text-zinc-400">
-                  <span>Fasilitas (AC, WiFi 100Mbps, Air)</span>
-                  <span className="text-emerald-400 font-semibold">Termasuk (Gratis)</span>
+                  <span>Utilitas & Fasilitas (AC, WiFi, Air)</span>
+                  <span className="text-zinc-400 font-medium">Termasuk</span>
                 </div>
-                <div className="pt-3 border-t border-white/10 flex justify-between text-sm font-black text-white">
-                  <span>Total yang Harus Dibayar</span>
-                  <span className="text-xl text-[#c5a880]">Rp {activeInvoice.amount.toLocaleString("id-ID")}</span>
+                <div className="pt-2 border-t border-zinc-800/60 flex justify-between font-semibold text-white">
+                  <span>Total Tagihan</span>
+                  <span className="text-sm">Rp {activeInvoice.amount.toLocaleString("id-ID")}</span>
                 </div>
               </div>
 
-              {/* Form Upload Bukti (Only if UNPAID or want to re-upload) */}
+              {/* Form Upload */}
               {activeInvoice.status === "UNPAID" && (
-                <form onSubmit={handleUploadPayment} className="pt-4 border-t border-white/10 space-y-4">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2">
-                    <Upload className="w-4 h-4 text-[#c5a880]" />
-                    <span>Konfirmasi Pembayaran Transfer</span>
-                  </h3>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <form onSubmit={handleUploadPayment} className="pt-3 border-t border-zinc-800/60 space-y-3 text-xs">
+                  <span className="block font-medium text-white">Konfirmasi Bukti Transfer:</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block font-bold text-zinc-400 mb-1">Metode Transfer yang Digunakan</label>
+                      <label className="block text-zinc-400 mb-1">Metode Pembayaran</label>
                       <select
                         value={paymentMethod}
                         onChange={(e) => setPaymentMethod(e.target.value)}
-                        className="w-full px-3 py-2.5 rounded-xl bg-zinc-800 border border-white/10 text-white text-xs focus:outline-none focus:border-[#c5a880]"
+                        className="w-full px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-white text-xs"
                       >
-                        <option value="Transfer BCA">Transfer Bank BCA</option>
-                        <option value="Transfer Mandiri">Transfer Bank Mandiri</option>
-                        <option value="Transfer BNI/BRI">Transfer BNI / BRI</option>
-                        <option value="QRIS">QRIS / E-Wallet (GoPay/OVO)</option>
-                        <option value="Cash / Tunai">Bayar Tunai ke Pengelola</option>
+                        <option value="Transfer BCA">Transfer BCA</option>
+                        <option value="Transfer Mandiri">Transfer Mandiri</option>
+                        <option value="QRIS">QRIS</option>
+                        <option value="Cash">Tunai</option>
                       </select>
                     </div>
-
                     <div>
-                      <label className="block font-bold text-zinc-400 mb-1">Foto Bukti Transfer (Struk ATM / m-Banking)</label>
+                      <label className="block text-zinc-400 mb-1">Link Foto Bukti Transfer</label>
                       <input
                         type="text"
                         value={proofUrl}
                         onChange={(e) => setProofUrl(e.target.value)}
-                        placeholder="Link foto bukti transfer..."
                         required
-                        className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-[#c5a880]"
+                        className="w-full px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-white text-xs"
                       />
                     </div>
                   </div>
@@ -166,148 +128,42 @@ export default function TenantTagihanPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#c5a880] to-[#a48256] text-black font-black text-xs uppercase tracking-wider hover:opacity-95 transition-all shadow-lg shadow-[#c5a880]/20 flex items-center justify-center gap-2"
+                    className="w-full py-2 rounded-lg bg-white text-black font-medium text-xs hover:bg-zinc-200 transition-colors"
                   >
-                    <span>{isSubmitting ? "Mengirimkan Bukti..." : "Kirim Bukti Pembayaran ke Admin"}</span>
+                    {isSubmitting ? "Mengirim..." : "Kirim Bukti Pembayaran"}
                   </button>
                 </form>
               )}
 
               {activeInvoice.status === "PENDING_VERIFICATION" && (
-                <div className="pt-4 border-t border-white/10 p-4 rounded-2xl bg-black/40 border border-sky-500/30 text-xs">
-                  <div className="flex items-center gap-2 text-sky-400 font-bold mb-1">
-                    <Clock className="w-4 h-4" />
-                    <span>Bukti Transfer Telah Dikirim</span>
-                  </div>
-                  <p className="text-zinc-300">
-                    Pengelola sedang memeriksa mutasi rekening. Anda akan menerima notifikasi jika status sudah lunas.
-                  </p>
-                  {activeInvoice.paymentProof && (
-                    <div className="mt-3">
-                      <a
-                        href={activeInvoice.paymentProof}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-[11px] text-[#c5a880] hover:underline font-bold"
-                      >
-                        Lihat foto bukti yang diunggah →
-                      </a>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {activeInvoice.status === "PAID" && (
-                <div className="pt-4 border-t border-white/10 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Tagihan telah lunas diverifikasi ({activeInvoice.paidAt})</span>
-                  </div>
-                  <button
-                    onClick={() => window.print()}
-                    className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white text-xs font-bold flex items-center gap-1.5 transition-colors"
-                  >
-                    <Printer className="w-3.5 h-3.5" />
-                    <span>Cetak Nota</span>
-                  </button>
+                <div className="p-3 rounded-lg bg-zinc-950/60 border border-zinc-800/60 text-xs text-zinc-400">
+                  Bukti pembayaran telah terkirim. Admin akan memverifikasi mutasi rekening.
                 </div>
               )}
             </div>
           ) : (
-            <div className="p-8 rounded-3xl bg-zinc-900/60 text-center text-zinc-400 text-xs">
-              Tidak ada tagihan aktif untuk kamar Anda saat ini.
-            </div>
+            <p className="text-xs text-zinc-500">Tidak ada tagihan aktif.</p>
           )}
         </div>
 
-        {/* Right Col: Official Bank & QRIS Instruction */}
-        <div className="space-y-6">
-          <div className="p-6 rounded-3xl bg-zinc-900/80 border border-white/10 space-y-4">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-[#c5a880]" />
-              <span>Rekening Transfer Resmi</span>
-            </h3>
-
-            <div className="p-4 rounded-2xl bg-black/60 border border-white/5 space-y-2">
-              <span className="text-[11px] text-zinc-400 block font-semibold">{building.bankName}</span>
-              <div className="flex items-center justify-between">
-                <span className="text-lg font-mono font-black text-white">{building.bankAccount}</span>
-                <button
-                  onClick={copyBankToClipboard}
-                  className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white"
-                  title="Salin"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                </button>
+        {/* Right Col: Bank Account */}
+        <div className="space-y-4">
+          <div className="p-4 rounded-xl bg-zinc-900/30 border border-zinc-800/80 space-y-2 text-xs">
+            <span className="text-zinc-400 font-medium">Rekening Resmi Pembayaran:</span>
+            <div className="p-3 rounded-lg bg-zinc-950/60 border border-zinc-850 flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-white">{building.bankName}</p>
+                <p className="font-mono text-zinc-300 font-semibold">{building.bankAccount}</p>
+                <p className="text-[10px] text-zinc-500">a.n. {building.bankHolder}</p>
               </div>
-              <span className="text-xs text-[#c5a880] font-bold block">a.n. {building.bankHolder}</span>
-            </div>
-
-            <div className="text-[11px] text-zinc-400 space-y-1.5 leading-relaxed">
-              <p>1. Transfer tepat sesuai nominal tagihan sewa.</p>
-              <p>2. Simpan struk transfer atau screenshot m-Banking.</p>
-              <p>3. Unggah bukti pada formulir di sebelah kiri.</p>
-            </div>
-          </div>
-
-          {/* QRIS Card */}
-          <div className="p-6 rounded-3xl bg-zinc-900/80 border border-white/10 space-y-3 text-center">
-            <h3 className="text-sm font-bold text-white flex items-center justify-center gap-2">
-              <QrCode className="w-4 h-4 text-[#c5a880]" />
-              <span>Scan QRIS Kostku</span>
-            </h3>
-            <p className="text-[11px] text-zinc-400">
-              Dapat di-scan menggunakan seluruh aplikasi mobile banking (BCA, Mandiri, BRI) & e-Wallet (GoPay, OVO, Dana).
-            </p>
-            <div className="w-36 h-36 mx-auto rounded-2xl overflow-hidden border border-white/10 bg-white p-2">
-              <img
-                src={building.qrisUrl}
-                alt="QRIS Kostku"
-                className="w-full h-full object-contain"
-              />
+              <button
+                onClick={copyBankToClipboard}
+                className="p-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors"
+              >
+                <Copy className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Past Invoices Table */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-zinc-900/60 border border-white/10">
-        <h3 className="text-base font-bold text-white mb-4">Riwayat Pembayaran Sebelumnya</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-white/10 text-zinc-400 uppercase tracking-wider">
-                <th className="pb-3 font-semibold">No. Invoice</th>
-                <th className="pb-3 font-semibold">Periode</th>
-                <th className="pb-3 font-semibold">Nominal</th>
-                <th className="pb-3 font-semibold">Metode</th>
-                <th className="pb-3 font-semibold">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {myInvoices.map((inv) => (
-                <tr key={inv.id} className="hover:bg-white/[0.02]">
-                  <td className="py-3 font-mono text-zinc-300">{inv.invoiceNumber}</td>
-                  <td className="py-3 text-white font-bold">{inv.periodMonth} {inv.periodYear}</td>
-                  <td className="py-3 text-[#c5a880] font-bold">Rp {inv.amount.toLocaleString("id-ID")}</td>
-                  <td className="py-3 text-zinc-400">{inv.paymentMethod || "Transfer"}</td>
-                  <td className="py-3">
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                        inv.status === "PAID"
-                          ? "bg-emerald-500/20 text-emerald-300"
-                          : inv.status === "PENDING_VERIFICATION"
-                          ? "bg-sky-500/20 text-sky-300"
-                          : "bg-amber-500/20 text-amber-300"
-                      }`}
-                    >
-                      {inv.status === "PAID" ? "Lunas" : inv.status === "PENDING_VERIFICATION" ? "Verifikasi" : "Belum Bayar"}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
       </div>
     </div>

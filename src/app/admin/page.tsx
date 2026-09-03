@@ -8,13 +8,10 @@ import {
   Users,
   Receipt,
   Wallet,
-  AlertTriangle,
-  ArrowUpRight,
   Clock,
-  CheckCircle2,
+  ArrowUpRight,
   Phone,
-  Building2,
-  Sparkles,
+  Check,
 } from "lucide-react";
 
 export default function AdminOverviewPage() {
@@ -32,235 +29,225 @@ export default function AdminOverviewPage() {
   const paidAmount = invoices.filter((i) => i.status === "PAID").reduce((acc, i) => acc + i.amount, 0);
 
   const totalExpenses = expenses.reduce((acc, e) => acc + e.amount, 0);
-
   const openComplaints = complaints.filter((c) => c.status !== "RESOLVED");
 
   const sendWhatsAppReminder = (inv: (typeof invoices)[0]) => {
     const text = encodeURIComponent(
-      `Halo Kak ${inv.tenantName} (Kamar ${inv.roomNumber}), ini pengingat tagihan sewa Kostku untuk periode ${inv.periodMonth} ${inv.periodYear} sebesar Rp ${inv.amount.toLocaleString("id-ID")} dengan batas jatuh tempo ${inv.dueDate}.\n\nPembayaran dapat ditransfer ke ${building.bankName} ${building.bankAccount} a.n. ${building.bankHolder}.\n\nJika sudah transfer, mohon unggah bukti di portal penghuni atau kirim ke WA ini. Terima kasih! 🙏`
+      `Halo Kak ${inv.tenantName} (Kamar ${inv.roomNumber}), ini pengingat tagihan sewa ${building.name} untuk periode ${inv.periodMonth} ${inv.periodYear} sebesar Rp ${inv.amount.toLocaleString("id-ID")}.\n\nPembayaran dapat ditransfer ke ${building.bankName} ${building.bankAccount} a.n. ${building.bankHolder}.\n\nTerima kasih.`
     );
     window.open(`https://wa.me/${inv.tenantPhone}?text=${text}`, "_blank");
   };
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
-      {/* 1. Header Banner */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-zinc-900 via-zinc-900/90 to-black border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="space-y-8">
+      {/* 1. Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-zinc-800/80">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#c5a880]/10 border border-[#c5a880]/30 text-[#c5a880] text-xs font-bold mb-3">
-            <Building2 className="w-3.5 h-3.5" />
-            <span>Sistem Gedung Tunggal: {building.name}</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-            Dashboard Pengelola Gedung
+          <h1 className="text-xl font-semibold text-white tracking-tight">
+            Ringkasan Operasional
           </h1>
-          <p className="text-xs sm:text-sm text-zinc-400 mt-1">
-            Pantau status kamar, penghuni aktif, uang deposit, serta arus kas tagihan sewa gedung secara realtime.
+          <p className="text-xs text-zinc-400 mt-0.5">
+            {building.name} • {building.address}
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <Link
             href="/admin/tagihan"
-            className="px-4 py-2.5 rounded-xl bg-[#c5a880] text-black font-bold text-xs uppercase tracking-wider hover:bg-[#d6bc96] transition-all shadow-md shadow-[#c5a880]/20"
+            className="px-3.5 py-1.5 rounded-lg bg-white text-zinc-950 font-medium text-xs hover:bg-zinc-200 transition-colors"
           >
             + Buat Tagihan
           </Link>
           <Link
             href="/admin/pengeluaran"
-            className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-xs uppercase tracking-wider transition-all"
+            className="px-3.5 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 font-medium text-xs transition-colors"
           >
             + Catat Pengeluaran
           </Link>
         </div>
       </div>
 
-      {/* 2. Top Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {/* Card 1: Okupansi Kamar */}
-        <div className="p-5 rounded-2xl bg-zinc-900/60 border border-white/10 hover:border-white/20 transition-all">
-          <div className="flex items-center justify-between text-zinc-400 text-xs font-semibold">
-            <span>Status Okupansi Kamar</span>
-            <DoorClosed className="w-4 h-4 text-[#c5a880]" />
+      {/* 2. Top Metrics (Subtle, Clean Typography) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Okupansi */}
+        <div className="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/80">
+          <span className="text-xs font-medium text-zinc-400">Okupansi Kamar</span>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-2xl font-semibold text-white tracking-tight">{occupiedRooms}</span>
+            <span className="text-xs text-zinc-500">/ {totalRooms} kamar ({Math.round((occupiedRooms / totalRooms) * 100)}%)</span>
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-3xl font-black text-white">{occupiedRooms}/{totalRooms}</span>
-            <span className="text-xs text-emerald-400 font-bold">Terisi ({Math.round((occupiedRooms / totalRooms) * 100)}%)</span>
-          </div>
-          <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between text-[11px] text-zinc-400">
-            <span className="text-emerald-400 font-semibold">{availableRooms} Tersedia</span>
-            <span className="text-amber-400 font-semibold">{maintenanceRooms} Perbaikan</span>
+          <div className="mt-2 text-[11px] text-zinc-500 flex items-center gap-3">
+            <span>{availableRooms} tersedia</span>
+            <span>•</span>
+            <span>{maintenanceRooms} servis</span>
           </div>
         </div>
 
-        {/* Card 2: Uang Deposit */}
-        <div className="p-5 rounded-2xl bg-zinc-900/60 border border-white/10 hover:border-white/20 transition-all">
-          <div className="flex items-center justify-between text-zinc-400 text-xs font-semibold">
-            <span>Total Deposit Tertahan</span>
-            <Wallet className="w-4 h-4 text-emerald-400" />
+        {/* Card 2: Deposit */}
+        <div className="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/80">
+          <span className="text-xs font-medium text-zinc-400">Uang Jaminan (Deposit)</span>
+          <div className="mt-2">
+            <span className="text-2xl font-semibold text-white tracking-tight">
+              Rp {totalDepositHeld.toLocaleString("id-ID")}
+            </span>
           </div>
-          <div className="mt-3">
-            <span className="text-3xl font-black text-white">Rp {totalDepositHeld.toLocaleString("id-ID")}</span>
-          </div>
-          <p className="mt-3 pt-3 border-t border-white/5 text-[11px] text-zinc-400">
-            Dari <span className="text-white font-bold">{tenants.length} anak kost</span> aktif (uang jaminan)
+          <p className="mt-2 text-[11px] text-zinc-500">
+            Dari {tenants.length} penyewa aktif
           </p>
         </div>
 
-        {/* Card 3: Piutang Sewa */}
-        <div className="p-5 rounded-2xl bg-zinc-900/60 border border-white/10 hover:border-white/20 transition-all">
-          <div className="flex items-center justify-between text-zinc-400 text-xs font-semibold">
-            <span>Tagihan Pending / Piutang</span>
-            <Receipt className="w-4 h-4 text-amber-400" />
+        {/* Card 3: Piutang */}
+        <div className="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/80">
+          <span className="text-xs font-medium text-zinc-400">Tagihan Pending</span>
+          <div className="mt-2">
+            <span className="text-2xl font-semibold text-white tracking-tight">
+              Rp {pendingAmount.toLocaleString("id-ID")}
+            </span>
           </div>
-          <div className="mt-3">
-            <span className="text-3xl font-black text-amber-300">Rp {pendingAmount.toLocaleString("id-ID")}</span>
-          </div>
-          <p className="mt-3 pt-3 border-t border-white/5 text-[11px] text-zinc-400">
-            <span className="text-amber-300 font-bold">{pendingInvoices.length} tagihan</span> belum diverifikasi / dibayar
+          <p className="mt-2 text-[11px] text-zinc-500">
+            {pendingInvoices.length} invoice belum selesai
           </p>
         </div>
 
         {/* Card 4: Arus Kas */}
-        <div className="p-5 rounded-2xl bg-zinc-900/60 border border-white/10 hover:border-white/20 transition-all">
-          <div className="flex items-center justify-between text-zinc-400 text-xs font-semibold">
-            <span>Pemasukan Lunas Bulan Ini</span>
-            <Sparkles className="w-4 h-4 text-[#c5a880]" />
+        <div className="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/80">
+          <span className="text-xs font-medium text-zinc-400">Pemasukan Lunas</span>
+          <div className="mt-2">
+            <span className="text-2xl font-semibold text-white tracking-tight">
+              Rp {paidAmount.toLocaleString("id-ID")}
+            </span>
           </div>
-          <div className="mt-3">
-            <span className="text-3xl font-black text-emerald-400">Rp {paidAmount.toLocaleString("id-ID")}</span>
-          </div>
-          <p className="mt-3 pt-3 border-t border-white/5 text-[11px] text-zinc-400">
-            Pengeluaran: <span className="text-red-400 font-bold">Rp {totalExpenses.toLocaleString("id-ID")}</span>
+          <p className="mt-2 text-[11px] text-zinc-500">
+            Beban: Rp {totalExpenses.toLocaleString("id-ID")}
           </p>
         </div>
       </div>
 
-      {/* 3. Action Required Section: Verifikasi Bukti & Laporan Kerusakan */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Verification Alert */}
-        <div className="p-6 rounded-3xl bg-amber-950/20 border border-amber-500/30">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 text-amber-400">
-              <Clock className="w-5 h-5" />
-              <h2 className="text-sm font-bold uppercase tracking-wider">Perlu Verifikasi Bukti Pembayaran</h2>
+      {/* 3. Action Required Section (Minimalist, No Rainbow Glowing Boxes) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* Verification Pending */}
+        <div className="p-5 rounded-xl bg-zinc-900/30 border border-zinc-800/80 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-800/60 mb-3">
+              <span className="text-xs font-medium text-zinc-300 flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-zinc-400" />
+                Verifikasi Bukti Transfer ({invoices.filter((i) => i.status === "PENDING_VERIFICATION").length})
+              </span>
+              <Link href="/admin/tagihan" className="text-[11px] text-zinc-500 hover:text-zinc-300">
+                Semua →
+              </Link>
             </div>
-            <Link href="/admin/tagihan" className="text-xs font-bold text-amber-400 hover:underline">
-              Kelola Semua →
-            </Link>
-          </div>
 
-          {invoices.filter((i) => i.status === "PENDING_VERIFICATION").length > 0 ? (
-            <div className="space-y-3">
-              {invoices
-                .filter((i) => i.status === "PENDING_VERIFICATION")
-                .map((inv) => (
-                  <div
-                    key={inv.id}
-                    className="p-4 rounded-2xl bg-black/40 border border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-                  >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-black text-white">Kamar {inv.roomNumber}</span>
-                        <span className="text-xs text-zinc-300">• {inv.tenantName}</span>
+            {invoices.filter((i) => i.status === "PENDING_VERIFICATION").length > 0 ? (
+              <div className="space-y-2">
+                {invoices
+                  .filter((i) => i.status === "PENDING_VERIFICATION")
+                  .map((inv) => (
+                    <div
+                      key={inv.id}
+                      className="p-3 rounded-lg bg-zinc-950/60 border border-zinc-800/60 flex items-center justify-between gap-3 text-xs"
+                    >
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-white">Kamar {inv.roomNumber}</span>
+                          <span className="text-zinc-400">• {inv.tenantName}</span>
+                        </div>
+                        <p className="text-[11px] text-zinc-400 mt-0.5">
+                          Rp {inv.amount.toLocaleString("id-ID")} ({inv.paymentMethod || "Transfer"})
+                        </p>
                       </div>
-                      <p className="text-xs font-bold text-amber-300 mt-1">
-                        Rp {inv.amount.toLocaleString("id-ID")} ({inv.periodMonth} {inv.periodYear})
-                      </p>
-                      <span className="text-[10px] text-zinc-400">Metode: {inv.paymentMethod || "Transfer Bank"}</span>
-                    </div>
 
-                    <div className="flex items-center gap-2">
-                      {inv.paymentProof && (
-                        <a
-                          href={inv.paymentProof}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold text-white transition-colors"
+                      <div className="flex items-center gap-1.5">
+                        {inv.paymentProof && (
+                          <a
+                            href={inv.paymentProof}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs transition-colors"
+                          >
+                            Bukti
+                          </a>
+                        )}
+                        <button
+                          onClick={() => updateInvoiceStatus(inv.id, "PAID")}
+                          className="px-2.5 py-1 rounded bg-white text-black font-medium text-xs hover:bg-zinc-200 transition-colors flex items-center gap-1"
                         >
-                          Bukti
-                        </a>
-                      )}
-                      <button
-                        onClick={() => updateInvoiceStatus(inv.id, "PAID")}
-                        className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors shadow-md shadow-emerald-900/30"
-                      >
-                        ✓ Konfirmasi Lunas
-                      </button>
+                          <Check className="w-3 h-3" />
+                          <span>Lunas</span>
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
-            </div>
-          ) : (
-            <div className="p-6 rounded-2xl bg-black/20 text-center text-xs text-zinc-400">
-              Tidak ada bukti transfer yang menunggu verifikasi saat ini.
-            </div>
-          )}
+                  ))}
+              </div>
+            ) : (
+              <p className="text-xs text-zinc-500 py-3 text-center">
+                Tidak ada bukti transfer menunggu konfirmasi.
+              </p>
+            )}
+          </div>
         </div>
 
-        {/* Complaints Alert */}
-        <div className="p-6 rounded-3xl bg-red-950/20 border border-red-500/30">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 text-red-400">
-              <AlertTriangle className="w-5 h-5" />
-              <h2 className="text-sm font-bold uppercase tracking-wider">Laporan Fasilitas / Komplain ({openComplaints.length})</h2>
+        {/* Complaints Pending */}
+        <div className="p-5 rounded-xl bg-zinc-900/30 border border-zinc-800/80 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-800/60 mb-3">
+              <span className="text-xs font-medium text-zinc-300">
+                Komplain Fasilitas Aktif ({openComplaints.length})
+              </span>
+              <Link href="/admin/komplain" className="text-[11px] text-zinc-500 hover:text-zinc-300">
+                Kelola →
+              </Link>
             </div>
-            <Link href="/admin/komplain" className="text-xs font-bold text-red-400 hover:underline">
-              Kelola Tiket →
-            </Link>
-          </div>
 
-          <div className="space-y-3">
-            {openComplaints.slice(0, 2).map((c) => (
-              <div
-                key={c.id}
-                className="p-4 rounded-2xl bg-black/40 border border-red-500/20 flex items-center justify-between gap-3"
-              >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-black text-white">Kamar {c.roomNumber}</span>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
-                      c.status === "IN_PROGRESS" ? "bg-amber-500/20 text-amber-300" : "bg-red-500/20 text-red-300"
-                    }`}>
-                      {c.status === "IN_PROGRESS" ? "Dikerjakan" : "Menunggu"}
-                    </span>
-                  </div>
-                  <p className="text-xs font-semibold text-zinc-200 mt-1">{c.title}</p>
-                  <p className="text-[10px] text-zinc-400 mt-0.5 line-clamp-1">{c.description}</p>
-                </div>
-                <Link
-                  href="/admin/komplain"
-                  className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold text-white shrink-0"
+            <div className="space-y-2">
+              {openComplaints.slice(0, 2).map((c) => (
+                <div
+                  key={c.id}
+                  className="p-3 rounded-lg bg-zinc-950/60 border border-zinc-800/60 flex items-center justify-between gap-3 text-xs"
                 >
-                  Tangani
-                </Link>
-              </div>
-            ))}
+                  <div className="truncate">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-white">Kamar {c.roomNumber}</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400">
+                        {c.status === "IN_PROGRESS" ? "Dikerjakan" : "Baru"}
+                      </span>
+                    </div>
+                    <p className="text-zinc-300 text-[11px] mt-0.5 truncate">{c.title}</p>
+                  </div>
+                  <Link
+                    href="/admin/komplain"
+                    className="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs shrink-0 transition-colors"
+                  >
+                    Detail
+                  </Link>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 4. Mini Denah Kamar Visual (Lantai 1 & Lantai 2) */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-zinc-900/60 border border-white/10">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      {/* 4. Denah Kamar Visual (Clean Monochromatic Grid) */}
+      <div className="p-5 sm:p-6 rounded-xl bg-zinc-900/30 border border-zinc-800/80">
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-lg font-bold text-white">Denah Visual Kamar Gedung</h2>
-            <p className="text-xs text-zinc-400 mt-0.5">Tata letak kamar Lantai 1 & Lantai 2 beserta status real-time</p>
+            <h2 className="text-sm font-semibold text-white">Status Kamar Gedung</h2>
+            <p className="text-xs text-zinc-400 mt-0.5">Tata letak kamar per lantai</p>
           </div>
-          <div className="flex items-center gap-3 text-xs">
-            <span className="flex items-center gap-1.5 text-emerald-400">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Tersedia
+          <div className="flex items-center gap-3 text-[11px] text-zinc-400">
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Tersedia
             </span>
-            <span className="flex items-center gap-1.5 text-blue-400">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Terisi
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-zinc-500"></span> Terisi
             </span>
-            <span className="flex items-center gap-1.5 text-amber-400">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Perbaikan
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Servis
             </span>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {rooms.map((room) => {
             const isOccupied = room.status === "OCCUPIED";
             const isAvailable = room.status === "AVAILABLE";
@@ -268,23 +255,17 @@ export default function AdminOverviewPage() {
             return (
               <div
                 key={room.id}
-                className={`p-4 rounded-2xl border transition-all flex flex-col justify-between h-36 ${
-                  isOccupied
-                    ? "bg-blue-950/20 border-blue-500/30 hover:border-blue-500/60"
-                    : isAvailable
-                    ? "bg-emerald-950/20 border-emerald-500/30 hover:border-emerald-500/60"
-                    : "bg-amber-950/20 border-amber-500/30 hover:border-amber-500/60"
-                }`}
+                className="p-3.5 rounded-lg bg-zinc-950/70 border border-zinc-800/80 flex flex-col justify-between h-28 hover:border-zinc-700 transition-colors"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-lg font-black text-white">Kamar {room.roomNumber}</span>
+                  <span className="font-semibold text-sm text-white">Kamar {room.roomNumber}</span>
                   <span
-                    className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
+                    className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
                       isOccupied
-                        ? "bg-blue-500/20 text-blue-300"
+                        ? "bg-zinc-800 text-zinc-300"
                         : isAvailable
-                        ? "bg-emerald-500/20 text-emerald-300"
-                        : "bg-amber-500/20 text-amber-300"
+                        ? "bg-emerald-950/40 text-emerald-400 border border-emerald-900/40"
+                        : "bg-amber-950/40 text-amber-300 border border-amber-900/40"
                     }`}
                   >
                     {isOccupied ? "Terisi" : isAvailable ? "Kosong" : "Servis"}
@@ -292,18 +273,14 @@ export default function AdminOverviewPage() {
                 </div>
 
                 <div>
-                  <p className="text-xs text-zinc-300 font-semibold">{room.type} • Lt {room.floor}</p>
-                  <p className="text-[11px] text-zinc-400 mt-0.5">Rp {room.priceMonthly.toLocaleString("id-ID")}/bln</p>
+                  <p className="text-[11px] text-zinc-400">{room.type} • Lt {room.floor}</p>
+                  <p className="text-xs font-medium text-zinc-200 mt-0.5">
+                    Rp {room.priceMonthly.toLocaleString("id-ID")}
+                  </p>
                 </div>
 
-                <div className="pt-2 border-t border-white/5 text-[11px] truncate">
-                  {isOccupied ? (
-                    <span className="text-blue-300 font-semibold truncate flex items-center gap-1">
-                      <Users className="w-3 h-3" /> {room.tenantName}
-                    </span>
-                  ) : (
-                    <span className="text-emerald-400 font-medium">Siap Disewa</span>
-                  )}
+                <div className="text-[10px] text-zinc-500 truncate pt-1 border-t border-zinc-900">
+                  {isOccupied ? room.tenantName : "Siap huni"}
                 </div>
               </div>
             );
@@ -311,56 +288,46 @@ export default function AdminOverviewPage() {
         </div>
       </div>
 
-      {/* 5. Quick Pending Invoices & WhatsApp Reminder */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-zinc-900/60 border border-white/10">
-        <div className="flex items-center justify-between mb-6">
+      {/* 5. Pending Invoices Table */}
+      <div className="p-5 sm:p-6 rounded-xl bg-zinc-900/30 border border-zinc-800/80">
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-lg font-bold text-white">Tagihan Belum Lunas & Pengingat WA</h2>
-            <p className="text-xs text-zinc-400 mt-0.5">Kirim notifikasi tagihan langsung ke nomor WhatsApp anak kost</p>
+            <h2 className="text-sm font-semibold text-white">Tagihan Belum Lunas</h2>
+            <p className="text-xs text-zinc-400 mt-0.5">Daftar tagihan yang dapat dikirim pengingat WhatsApp</p>
           </div>
-          <Link href="/admin/tagihan" className="text-xs font-bold text-[#c5a880] hover:underline">
-            Lihat Semua Tagihan →
+          <Link href="/admin/tagihan" className="text-xs text-zinc-400 hover:text-white">
+            Lihat semua →
           </Link>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-white/10 text-zinc-400 uppercase tracking-wider">
-                <th className="pb-3 font-semibold">Kamar</th>
-                <th className="pb-3 font-semibold">Nama Penyewa</th>
-                <th className="pb-3 font-semibold">Periode</th>
-                <th className="pb-3 font-semibold">Nominal</th>
-                <th className="pb-3 font-semibold">Jatuh Tempo</th>
-                <th className="pb-3 font-semibold">Status</th>
-                <th className="pb-3 font-semibold text-right">Aksi Cepat</th>
+              <tr className="border-b border-zinc-800/80 text-zinc-400">
+                <th className="pb-2.5 font-medium">Kamar</th>
+                <th className="pb-2.5 font-medium">Penyewa</th>
+                <th className="pb-2.5 font-medium">Periode</th>
+                <th className="pb-2.5 font-medium">Nominal</th>
+                <th className="pb-2.5 font-medium">Jatuh Tempo</th>
+                <th className="pb-2.5 font-medium text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-zinc-800/40 text-zinc-300">
               {invoices
-                .filter((i) => i.status === "UNPAID" || i.status === "PENDING_VERIFICATION")
+                .filter((i) => i.status !== "PAID")
                 .map((inv) => (
-                  <tr key={inv.id} className="hover:bg-white/[0.02]">
-                    <td className="py-3 font-black text-white">Kamar {inv.roomNumber}</td>
-                    <td className="py-3 text-zinc-200">{inv.tenantName}</td>
-                    <td className="py-3 text-zinc-400">{inv.periodMonth} {inv.periodYear}</td>
-                    <td className="py-3 font-bold text-[#c5a880]">Rp {inv.amount.toLocaleString("id-ID")}</td>
-                    <td className="py-3 text-zinc-400">{inv.dueDate}</td>
-                    <td className="py-3">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                        inv.status === "PENDING_VERIFICATION"
-                          ? "bg-amber-500/20 text-amber-300"
-                          : "bg-red-500/20 text-red-300"
-                      }`}>
-                        {inv.status === "PENDING_VERIFICATION" ? "Menunggu Verifikasi" : "Belum Bayar"}
-                      </span>
-                    </td>
-                    <td className="py-3 text-right">
+                  <tr key={inv.id} className="hover:bg-zinc-900/30">
+                    <td className="py-2.5 font-medium text-white">Kamar {inv.roomNumber}</td>
+                    <td className="py-2.5">{inv.tenantName}</td>
+                    <td className="py-2.5 text-zinc-400">{inv.periodMonth} {inv.periodYear}</td>
+                    <td className="py-2.5 font-medium text-white">Rp {inv.amount.toLocaleString("id-ID")}</td>
+                    <td className="py-2.5 text-zinc-400">{inv.dueDate}</td>
+                    <td className="py-2.5 text-right">
                       <button
                         onClick={() => sendWhatsAppReminder(inv)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs transition-colors"
                       >
-                        <Phone className="w-3.5 h-3.5" />
+                        <Phone className="w-3 h-3" />
                         <span>Kirim WA</span>
                       </button>
                     </td>

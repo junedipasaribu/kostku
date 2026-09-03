@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/navigation";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useKost } from "@/lib/kost-context";
 import {
@@ -16,8 +16,6 @@ import {
   Menu,
   X,
   ExternalLink,
-  ChevronRight,
-  Sparkles,
 } from "lucide-react";
 
 export default function AdminLayout({
@@ -35,39 +33,37 @@ export default function AdminLayout({
 
   const navItems = [
     {
-      label: "Ringkasan Gedung",
+      label: "Ringkasan",
       href: "/admin",
       icon: LayoutDashboard,
     },
     {
-      label: "Denah & Kamar",
+      label: "Kamar & Denah",
       href: "/admin/kamar",
       icon: DoorClosed,
-      badge: `${rooms.filter((r) => r.status === "AVAILABLE").length} Kosong`,
+      badge: `${rooms.filter((r) => r.status === "AVAILABLE").length}`,
     },
     {
-      label: "Data Penghuni & Deposit",
+      label: "Data Penghuni",
       href: "/admin/penghuni",
       icon: Users,
     },
     {
-      label: "Tagihan & Pembayaran",
+      label: "Tagihan & Sewa",
       href: "/admin/tagihan",
       icon: Receipt,
-      badge: pendingVerificationCount > 0 ? `${pendingVerificationCount} Perlu Cek` : undefined,
-      badgeColor: "bg-amber-500/20 text-amber-300 border-amber-500/30",
+      badge: pendingVerificationCount > 0 ? `${pendingVerificationCount}` : undefined,
     },
     {
-      label: "Pengeluaran Gedung",
+      label: "Beban Operasional",
       href: "/admin/pengeluaran",
       icon: Wallet,
     },
     {
-      label: "Laporan Kerusakan",
+      label: "Komplain Fasilitas",
       href: "/admin/komplain",
       icon: AlertCircle,
       badge: openComplaintsCount > 0 ? `${openComplaintsCount}` : undefined,
-      badgeColor: "bg-red-500/20 text-red-300 border-red-500/30",
     },
   ];
 
@@ -77,131 +73,115 @@ export default function AdminLayout({
   };
 
   return (
-    <div className="min-h-screen bg-[#090807] text-zinc-100 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-[#0c0c0e] text-zinc-100 flex flex-col md:flex-row antialiased">
       {/* Mobile Header */}
-      <div className="md:hidden flex items-center justify-between p-4 bg-zinc-950 border-b border-white/10 sticky top-0 z-50">
+      <div className="md:hidden flex items-center justify-between px-5 py-3.5 bg-zinc-950 border-b border-zinc-800/80 sticky top-0 z-50">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#c5a880] to-[#8a6839] flex items-center justify-center text-black font-black text-sm">
+          <div className="w-7 h-7 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center text-white font-bold text-xs">
             K
           </div>
-          <div>
-            <span className="font-extrabold text-white text-sm tracking-wide">
-              KOST<span className="text-[#c5a880]">KU</span>
-            </span>
-            <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-zinc-400">Admin</span>
-          </div>
+          <span className="font-semibold text-white text-sm tracking-tight">
+            Kostku <span className="text-zinc-400 font-normal text-xs">Admin</span>
+          </span>
         </div>
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-2 rounded-lg bg-white/5 border border-white/10 text-white"
+          className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white"
         >
           {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
 
-      {/* Sidebar Navigation */}
+      {/* Minimalist Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-zinc-950 border-r border-white/10 p-5 flex flex-col justify-between transition-transform duration-300 md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 w-64 bg-zinc-950 border-r border-zinc-800/80 p-4 flex flex-col justify-between transition-transform duration-200 md:static md:translate-x-0 ${
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div>
-          {/* Brand Header */}
-          <div className="mb-8">
-            <a href="/" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#c5a880] to-[#8a6839] flex items-center justify-center text-black font-black text-xl shadow-lg shadow-[#c5a880]/20">
+        <div className="space-y-6">
+          {/* Brand */}
+          <div className="px-2 pt-1 flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <div className="w-7 h-7 rounded-lg bg-white text-black flex items-center justify-center font-bold text-xs tracking-tight">
                 K
               </div>
               <div>
-                <h1 className="text-base font-black text-white tracking-wider">
-                  KOST<span className="text-[#c5a880]">KU</span>
-                </h1>
-                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                  Admin Gedung
-                </p>
+                <span className="text-sm font-semibold text-white tracking-tight">
+                  Kostku
+                </span>
+                <span className="block text-[11px] text-zinc-500 font-medium">
+                  {building.name}
+                </span>
               </div>
-            </a>
-          </div>
-
-          {/* Building Card Info */}
-          <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 mb-6">
-            <div className="flex items-center gap-2 text-[#c5a880] mb-1">
-              <Building2 className="w-3.5 h-3.5" />
-              <span className="text-xs font-bold truncate">{building.name}</span>
-            </div>
-            <p className="text-[11px] text-zinc-400 truncate">{building.address}</p>
-            <div className="mt-2.5 pt-2 border-t border-white/5 flex items-center justify-between text-[11px]">
-              <span className="text-zinc-500">Pemilik:</span>
-              <span className="font-semibold text-white truncate max-w-[110px]">{building.ownerName}</span>
-            </div>
+            </Link>
           </div>
 
           {/* Nav List */}
-          <nav className="space-y-1.5">
+          <nav className="space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
               return (
-                <a
+                <Link
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                  className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                     isActive
-                      ? "bg-[#c5a880] text-black shadow-md shadow-[#c5a880]/20 font-bold"
-                      : "text-zinc-400 hover:text-white hover:bg-white/[0.04]"
+                      ? "bg-zinc-800/90 text-white font-semibold"
+                      : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60"
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <Icon className="w-4 h-4 shrink-0" />
+                  <div className="flex items-center gap-2.5">
+                    <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-zinc-400"}`} />
                     <span>{item.label}</span>
                   </div>
                   {item.badge && (
                     <span
-                      className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${
+                      className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
                         isActive
-                          ? "bg-black/20 text-black border-black/30"
-                          : item.badgeColor || "bg-white/10 text-zinc-300 border-white/10"
+                          ? "bg-zinc-700 text-zinc-200"
+                          : "bg-zinc-900 text-zinc-400 border border-zinc-800"
                       }`}
                     >
                       {item.badge}
                     </span>
                   )}
-                </a>
+                </Link>
               );
             })}
           </nav>
         </div>
 
-        {/* Footer Sidebar / Profile & Switch */}
-        <div className="pt-6 border-t border-white/10 space-y-2">
-          <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between">
+        {/* Footer Profile */}
+        <div className="pt-4 border-t border-zinc-800/80 space-y-2">
+          <div className="px-3 py-2 rounded-lg bg-zinc-900/40 border border-zinc-800/60 flex items-center justify-between">
             <div className="truncate">
-              <p className="text-xs font-bold text-white truncate">{currentUser.name}</p>
-              <p className="text-[10px] text-emerald-400 font-semibold">Mode Pengelola (Owner)</p>
+              <p className="text-xs font-medium text-zinc-200 truncate">{currentUser.name}</p>
+              <p className="text-[10px] text-zinc-500">Pengelola</p>
             </div>
             <button
               onClick={handleLogout}
               title="Logout"
-              className="p-2 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+              className="p-1 text-zinc-500 hover:text-zinc-300 transition-colors"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <a
+          <Link
             href="/"
             target="_blank"
-            className="w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+            className="w-full py-1.5 px-3 rounded-lg text-zinc-400 hover:text-zinc-200 text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors"
           >
-            <span>Lihat Website Publik</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </a>
+            <span>Buka Website Publik</span>
+            <ExternalLink className="w-3 h-3" />
+          </Link>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 bg-[#090807] overflow-y-auto">
+      <main className="flex-1 min-w-0 p-6 sm:p-8 lg:p-10 overflow-y-auto max-w-6xl mx-auto w-full">
         {children}
       </main>
     </div>

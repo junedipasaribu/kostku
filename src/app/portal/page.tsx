@@ -3,20 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useKost } from "@/lib/kost-context";
-import {
-  Home,
-  Receipt,
-  Calendar,
-  Wallet,
-  ShieldCheck,
-  CheckCircle2,
-  AlertCircle,
-  Clock,
-  Sparkles,
-  Building2,
-  Copy,
-  ChevronRight
-} from "lucide-react";
+import { Copy, ChevronRight } from "lucide-react";
 
 export default function TenantHomePage() {
   const { building, currentUser, tenants, rooms, invoices } = useKost();
@@ -25,11 +12,10 @@ export default function TenantHomePage() {
   const room = rooms.find((r) => r.roomNumber === (tenant?.roomNumber || "101"));
 
   const myInvoices = invoices.filter((i) => i.roomNumber === tenant?.roomNumber || i.tenantPhone === tenant?.phone);
-  const currentInvoice = myInvoices[0]; // latest invoice
+  const currentInvoice = myInvoices[0];
 
   const isUnpaid = currentInvoice?.status === "UNPAID";
   const isPending = currentInvoice?.status === "PENDING_VERIFICATION";
-  const isPaid = currentInvoice?.status === "PAID";
 
   const copyBankToClipboard = () => {
     navigator.clipboard.writeText(building.bankAccount);
@@ -37,209 +23,120 @@ export default function TenantHomePage() {
   };
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
-      {/* 1. Header Banner */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-zinc-900 via-zinc-900/90 to-black border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold mb-3">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Penghuni Resmi • {building.name}</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-            Halo, {tenant?.fullName}! 👋
-          </h1>
-          <p className="text-xs sm:text-sm text-zinc-400 mt-1">
-            Selamat datang di portal kamar Anda. Pantau status pembayaran sewa, rincian deposit, dan lapor kendala fasilitas dengan mudah.
-          </p>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-black/50 border border-white/10 text-center shrink-0">
-          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Kamar Anda</span>
-          <span className="text-3xl font-black text-[#c5a880]">Kamar {tenant?.roomNumber}</span>
-          <span className="text-xs text-zinc-400 block mt-0.5">{room?.type} • Lantai {room?.floor}</span>
-        </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="pb-6 border-b border-zinc-800/80">
+        <h1 className="text-xl font-semibold text-white tracking-tight">
+          Informasi Kamar & Sewa
+        </h1>
+        <p className="text-xs text-zinc-400 mt-0.5">
+          {building.name} • Kamar {tenant?.roomNumber} ({room?.type})
+        </p>
       </div>
 
-      {/* 2. Billing Status Alert Card */}
+      {/* Billing Alert */}
       {currentInvoice && (
-        <div
-          className={`p-6 rounded-3xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all ${
-            isUnpaid
-              ? "bg-amber-950/20 border-amber-500/40 text-amber-200"
-              : isPending
-              ? "bg-sky-950/20 border-sky-500/40 text-sky-200"
-              : "bg-emerald-950/20 border-emerald-500/40 text-emerald-200"
-          }`}
-        >
-          <div className="flex items-start gap-3.5">
-            {isUnpaid ? (
-              <AlertCircle className="w-6 h-6 text-amber-400 shrink-0 mt-0.5" />
-            ) : isPending ? (
-              <Clock className="w-6 h-6 text-sky-400 shrink-0 mt-0.5" />
-            ) : (
-              <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0 mt-0.5" />
-            )}
-
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-extrabold uppercase tracking-wider">
-                  Tagihan Sewa Bulan {currentInvoice.periodMonth} {currentInvoice.periodYear}
-                </span>
-                <span
-                  className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
-                    isUnpaid
-                      ? "bg-amber-500/30 text-amber-300"
-                      : isPending
-                      ? "bg-sky-500/30 text-sky-300"
-                      : "bg-emerald-500/30 text-emerald-300"
-                  }`}
-                >
-                  {isUnpaid ? "Belum Dibayar" : isPending ? "Menunggu Verifikasi" : "Lunas"}
-                </span>
-              </div>
-
-              <p className="text-xs text-zinc-300 mt-1">
-                {isUnpaid ? (
-                  <>
-                    Total tagihan: <strong className="text-white">Rp {currentInvoice.amount.toLocaleString("id-ID")}</strong>. Jatuh tempo: <strong className="text-amber-300">{currentInvoice.dueDate}</strong>.
-                  </>
-                ) : isPending ? (
-                  <>
-                    Bukti transfer Anda sedang diverifikasi oleh admin. Terima kasih sudah membayar tepat waktu!
-                  </>
-                ) : (
-                  <>
-                    Pembayaran sebesar <strong>Rp {currentInvoice.amount.toLocaleString("id-ID")}</strong> telah lunas dan diverifikasi pengelola.
-                  </>
-                )}
-              </p>
+        <div className="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-white">Tagihan {currentInvoice.periodMonth} {currentInvoice.periodYear}</span>
+              <span
+                className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
+                  isUnpaid
+                    ? "bg-amber-950/60 text-amber-300 border border-amber-900/60"
+                    : isPending
+                    ? "bg-zinc-800 text-zinc-300"
+                    : "bg-emerald-950/60 text-emerald-400 border border-emerald-900/60"
+                }`}
+              >
+                {isUnpaid ? "Belum Dibayar" : isPending ? "Verifikasi" : "Lunas"}
+              </span>
             </div>
+            <p className="text-zinc-400 mt-0.5 text-[11px]">
+              Total: Rp {currentInvoice.amount.toLocaleString("id-ID")} • Jatuh tempo: {currentInvoice.dueDate}
+            </p>
           </div>
 
           <Link
             href="/portal/tagihan"
-            className={`px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shrink-0 ${
-              isUnpaid
-                ? "bg-[#c5a880] text-black hover:bg-[#d6bc96] shadow-md shadow-[#c5a880]/20"
-                : "bg-white/10 hover:bg-white/20 text-white"
-            }`}
+            className="px-3 py-1.5 rounded-lg bg-white text-black font-medium hover:bg-zinc-200 transition-colors flex items-center justify-center gap-1 shrink-0"
           >
-            <span>{isUnpaid ? "Bayar Sekarang" : "Lihat Rincian"}</span>
-            <ChevronRight className="w-4 h-4" />
+            <span>{isUnpaid ? "Bayar Tagihan" : "Lihat Rincian"}</span>
+            <ChevronRight className="w-3.5 h-3.5" />
           </Link>
         </div>
       )}
 
-      {/* 3. Room Details & Deposit Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Room Spec Card */}
-        <div className="p-6 rounded-3xl bg-zinc-900/60 border border-white/10 space-y-4">
+      {/* Room & Deposit Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Room specs */}
+        <div className="p-5 rounded-xl bg-zinc-900/30 border border-zinc-800/80 space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <Home className="w-4 h-4 text-[#c5a880]" />
-              <span>Spesifikasi Kamar Anda</span>
-            </h2>
-            <span className="text-xs font-semibold text-zinc-400">{room?.size}</span>
+            <span className="text-sm font-semibold text-white">Spesifikasi Kamar</span>
+            <span className="text-xs text-zinc-500">{room?.size}</span>
           </div>
 
           {room?.image && (
-            <div className="h-44 rounded-2xl overflow-hidden">
-              <img
-                src={room.image}
-                alt={`Kamar ${room.roomNumber}`}
-                className="w-full h-full object-cover"
-              />
+            <div className="h-36 rounded-lg overflow-hidden bg-zinc-950">
+              <img src={room.image} alt="Kamar" className="w-full h-full object-cover grayscale-[20%]" />
             </div>
           )}
 
           <div>
-            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block mb-2">
-              Fasilitas Kamar yang Disediakan:
-            </span>
-            <div className="flex flex-wrap gap-1.5">
-              {room?.facilities.map((f, idx) => (
-                <span key={idx} className="text-xs px-2.5 py-1 rounded-lg bg-white/5 border border-white/5 text-zinc-300">
-                  ✓ {f}
+            <span className="text-[11px] text-zinc-500 block mb-1.5 font-medium">Fasilitas Termasuk:</span>
+            <div className="flex flex-wrap gap-1.5 text-xs text-zinc-300">
+              {room?.facilities.map((f, i) => (
+                <span key={i} className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[11px]">
+                  {f}
                 </span>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Deposit & Rent Schedule Card */}
-        <div className="space-y-6">
-          {/* Uang Jaminan / Deposit */}
-          <div className="p-6 rounded-3xl bg-zinc-900/60 border border-white/10 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
-                <Wallet className="w-4 h-4 text-emerald-400" />
-                <span>Uang Jaminan / Deposit</span>
-              </h2>
-              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold uppercase">
-                {tenant?.depositStatus === "HELD" ? "Tertahan Aman" : tenant?.depositStatus}
-              </span>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-black/40 border border-white/5">
-              <span className="text-xs text-zinc-400 block">Nominal Deposit yang Tersimpan:</span>
-              <p className="text-2xl font-black text-white mt-1">
-                Rp {tenant?.depositAmount.toLocaleString("id-ID")}
-              </p>
-              <p className="text-[11px] text-zinc-400 mt-2 leading-relaxed">
-                Uang deposit adalah jaminan inventaris kamar yang akan dikembalikan secara penuh saat Anda checkout dan masa sewa berakhir (sesuai tata tertib gedung).
-              </p>
-            </div>
+        {/* Deposit & Rent details */}
+        <div className="space-y-4">
+          <div className="p-5 rounded-xl bg-zinc-900/30 border border-zinc-800/80 space-y-2">
+            <span className="text-sm font-semibold text-white">Uang Jaminan (Deposit)</span>
+            <p className="text-xl font-semibold text-white">
+              Rp {tenant?.depositAmount.toLocaleString("id-ID")}
+            </p>
+            <p className="text-[11px] text-zinc-500 leading-relaxed">
+              Deposit tersimpan aman di pengelola dan dapat diklaim kembali saat masa sewa Anda berakhir sesuai ketentuan.
+            </p>
           </div>
 
-          {/* Tanggal Masuk & Periode */}
-          <div className="p-6 rounded-3xl bg-zinc-900/60 border border-white/10 space-y-3">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-[#c5a880]" />
-              <span>Jadwal Sewa Kost</span>
-            </h2>
-
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5">
-                <span className="text-zinc-500 font-medium block">Tanggal Masuk:</span>
-                <span className="font-bold text-white mt-0.5 block">{tenant?.startDate}</span>
+          <div className="p-5 rounded-xl bg-zinc-900/30 border border-zinc-800/80 space-y-3">
+            <span className="text-sm font-semibold text-white">Jadwal Sewa</span>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="p-2.5 rounded-lg bg-zinc-950/60 border border-zinc-850">
+                <span className="text-zinc-500 text-[11px]">Tanggal Masuk:</span>
+                <p className="text-white font-medium mt-0.5">{tenant?.startDate}</p>
               </div>
-              <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5">
-                <span className="text-zinc-500 font-medium block">Jatuh Tempo Bulanan:</span>
-                <span className="font-bold text-[#c5a880] mt-0.5 block">{currentInvoice?.dueDate || "Tgl 10"}</span>
+              <div className="p-2.5 rounded-lg bg-zinc-950/60 border border-zinc-850">
+                <span className="text-zinc-500 text-[11px]">Jatuh Tempo:</span>
+                <p className="text-white font-medium mt-0.5">{currentInvoice?.dueDate || "Tgl 10"}</p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 4. Official Payment Account Box */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-zinc-900/60 border border-white/10">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-[#c5a880]" />
-              <span>Rekening Resmi Pembayaran {building.name}</span>
-            </h2>
-            <p className="text-xs text-zinc-400 mt-1">
-              Harap hanya melakukan pembayaran sewa ke nomor rekening resmi pengelola di bawah ini.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-black/60 border border-white/10">
-            <div>
-              <p className="text-xs font-black text-white">{building.bankName}</p>
-              <p className="text-base font-mono font-bold text-[#c5a880]">{building.bankAccount}</p>
-              <p className="text-[10px] text-zinc-400">a.n. {building.bankHolder}</p>
-            </div>
-            <button
-              onClick={copyBankToClipboard}
-              title="Salin No Rekening"
-              className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors"
-            >
-              <Copy className="w-4 h-4" />
-            </button>
-          </div>
+      {/* Bank Account */}
+      <div className="p-5 rounded-xl bg-zinc-900/30 border border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div>
+          <span className="text-zinc-400">Rekening Resmi Pengelola</span>
+          <p className="text-sm font-semibold text-white mt-0.5">
+            {building.bankName} • {building.bankAccount} (a.n. {building.bankHolder})
+          </p>
         </div>
+        <button
+          onClick={copyBankToClipboard}
+          className="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium flex items-center justify-center gap-1.5 transition-colors shrink-0"
+        >
+          <Copy className="w-3 h-3" />
+          <span>Salin Rekening</span>
+        </button>
       </div>
     </div>
   );

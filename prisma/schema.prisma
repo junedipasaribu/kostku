@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  TENANT
+}
+
+enum RoomStatus {
+  AVAILABLE
+  OCCUPIED
+  MAINTENANCE
+}
+
+enum InvoiceStatus {
+  UNPAID
+  PENDING_VERIFICATION
+  PAID
+  OVERDUE
+}
+
+enum ComplaintStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  phone     String?
+  role      Role     @default(TENANT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenantProfile Tenant?
+}
+
+model Room {
+  id           String     @id @default(cuid())
+  roomNumber   String     @unique
+  type         String     // e.g., Executive, Deluxe, Superior, Standard
+  priceMonthly Float
+  priceAnnual  Float?
+  status       RoomStatus @default(AVAILABLE)
+  size         String?    // e.g., 3x4 m
+  floor        Int        @default(1)
+  facilities   String[]   // AC, WiFi, Kamar Mandi Dalam, etc.
+  description  String?
+  images       String[]   // URLs
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  tenants      Tenant[]
+  invoices     Invoice[]
+  complaints   Complaint[]
+}
+
+model Tenant {
+  id               String       @id @default(cuid())
+  userId           String?      @unique
+  user             User?        @relation(fields: [userId], references: [id])
+  roomId           String
+  room             Room         @relation(fields: [roomId], references: [id])
+  fullName         String
+  phone            String
+  idCardNumber     String?      // KTP
+  emergencyContact String?
+  startDate        DateTime
+  endDate          DateTime?
+  status           String       @default("ACTIVE") // ACTIVE, ENDED
+  notes            String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  invoices         Invoice[]
+  complaints       Complaint[]
+}
+
+model Invoice {
+  id            String        @id @default(cuid())
+  invoiceNumber String        @unique
+  tenantId      String
+  tenant        Tenant        @relation(fields: [tenantId], references: [id])
+  roomId        String
+  room          Room          @relation(fields: [roomId], references: [id])
+  periodMonth   Int
+  periodYear    Int
+  amount        Float
+  dueDate       DateTime
+  paidAt        DateTime?
+  status        InvoiceStatus @default(UNPAID)
+  paymentProof  String?       // URL transfer receipt
+  paymentMethod String?       // Transfer BCA, QRIS, Cash
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  category    String   // Listrik, Air/PDAM, WiFi, Kebersihan, Maintenance
+  description String
+  amount      Float
+  expenseDate DateTime @default(now())
+  receiptUrl  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Complaint {
+  id          String          @id @default(cuid())
+  tenantId    String
+  tenant      Tenant          @relation(fields: [tenantId], references: [id])
+  roomId      String
+  room        Room            @relation(fields: [roomId], references: [id])
+  title       String
+  description String
+  photoUrl    String?
+  status      ComplaintStatus @default(OPEN)
+  resolvedAt  DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}

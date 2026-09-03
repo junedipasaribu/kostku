@@ -111,7 +111,7 @@ jobs:
             NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET || 'kostku_secret_production' }}
             NEXTAUTH_URL=https://kostku.juns-digital.my.id
             NEXT_PUBLIC_APP_URL=https://kostku.juns-digital.my.id
-            HOST_PORT=3001
+            HOST_PORT=3002
             APP_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             EOF
             

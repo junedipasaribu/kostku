@@ -35,7 +35,7 @@ Tambahkan Secret berikut pada repository GitHub (`Settings > Secrets and variabl
 
 ## 🌐 Konfigurasi Domain di Server (`kostku.juns-digital.my.id`)
 
-Aplikasi Kostku berjalan di port host **`3001`** (sehingga tidak bentrok dengan `Web-L` di port `3000`).
+Aplikasi Kostku berjalan di port host **`3002`** (sehingga tidak bentrok dengan `Web-L` di port `3000` dan aplikasi lain di port `3001`).
 
 ### Pilihan 1: Jika Server Menggunakan Nginx
 1. Salin konfigurasi dari `nginx/kostku.conf` ke `/etc/nginx/sites-available/kostku.conf`:

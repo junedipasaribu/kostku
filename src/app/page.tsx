@@ -66,18 +66,19 @@ export default function Home() {
 
           <div className="flex items-center gap-3">
             <Link
-              href="/demo"
-              className="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10 transition-colors"
+              href="/portal"
+              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/5 hover:bg-white/10 text-white border border-white/10 transition-colors flex items-center gap-1.5"
             >
-              <span>Demo Carousel</span>
+              <User className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Portal Penghuni</span>
             </Link>
-            <button
-              onClick={() => handleBooking("Umum")}
-              className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-[#c5a880] to-[#a48256] text-black hover:opacity-95 shadow-md shadow-[#c5a880]/25 transition-all flex items-center gap-2"
+            <Link
+              href="/admin"
+              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-[#c5a880] hover:bg-[#d6bc96] text-black shadow-md shadow-[#c5a880]/20 transition-all flex items-center gap-1.5"
             >
-              <Phone className="w-4 h-4" />
-              <span>Hubungi Pengelola</span>
-            </button>
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Dashboard Admin</span>
+            </Link>
           </div>
         </div>
       </header>
@@ -86,7 +87,7 @@ export default function Home() {
       <section className="relative pt-12 pb-6 px-4 sm:px-6 lg:px-8 text-center max-w-5xl mx-auto">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-[#c5a880] mb-6">
           <Sparkles className="w-3.5 h-3.5" />
-          <span>Hunian Kost Eksklusif, Tenang & Strategis</span>
+          <span>Sistem Operasional 1 Gedung Kost • Hunian Eksklusif & Tenang</span>
         </div>
 
         <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white leading-tight">
@@ -97,8 +98,25 @@ export default function Home() {
         </h1>
 
         <p className="mt-6 text-base sm:text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-          Tempat istirahat dan berkarya yang tenang, dilengkapi smart access 24 jam, WiFi kecepatan tinggi, kamar mandi dalam air panas, dan suasana aman.
+          Tempat istirahat dan berkarya yang tenang, dilengkapi smart access 24 jam, WiFi kecepatan tinggi, kamar mandi dalam air panas, dan manajemen operasional terpadu.
         </p>
+
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+          <a
+            href="#kamar"
+            className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-[#c5a880] to-[#a48256] text-black font-extrabold text-sm uppercase tracking-wider hover:opacity-95 shadow-lg shadow-[#c5a880]/20 transition-all flex items-center gap-2"
+          >
+            <span>Lihat Kamar Pilihan</span>
+            <ArrowUpRight className="w-4 h-4" />
+          </a>
+          <Link
+            href="/login"
+            className="px-6 py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-sm uppercase tracking-wider transition-all flex items-center gap-2"
+          >
+            <User className="w-4 h-4 text-emerald-400" />
+            <span>Login Penghuni & Admin</span>
+          </Link>
+        </div>
 
         {/* Quick Highlights / Badges */}
         <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl mx-auto text-left">

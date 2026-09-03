@@ -32,6 +32,26 @@ enum ComplaintStatus {
   RESOLVED
 }
 
+enum DepositStatus {
+  HELD
+  REFUNDED
+  DEDUCTED
+}
+
+model BuildingConfig {
+  id             String   @id @default("default")
+  name           String   @default("Kostku Residence")
+  address        String   @default("Jl. Kemang Raya No. 45, Jakarta Selatan")
+  ownerName      String   @default("Junedi Pasaribu")
+  ownerPhone     String   @default("6281234567890")
+  bankName       String   @default("BCA")
+  bankAccount    String   @default("8830123456")
+  bankHolder     String   @default("Junedi Pasaribu")
+  qrisUrl        String?
+  rules          String[]
+  updatedAt      DateTime @updatedAt
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -48,11 +68,11 @@ model User {
 model Room {
   id           String     @id @default(cuid())
   roomNumber   String     @unique
-  type         String     // e.g., Executive, Deluxe, Superior, Standard
+  type         String     // Executive, Deluxe, Superior, Standard
   priceMonthly Float
   priceAnnual  Float?
   status       RoomStatus @default(AVAILABLE)
-  size         String?    // e.g., 3x4 m
+  size         String?    // e.g., 4x4 m
   floor        Int        @default(1)
   facilities   String[]   // AC, WiFi, Kamar Mandi Dalam, etc.
   description  String?
@@ -66,21 +86,24 @@ model Room {
 }
 
 model Tenant {
-  id               String       @id @default(cuid())
-  userId           String?      @unique
-  user             User?        @relation(fields: [userId], references: [id])
+  id               String        @id @default(cuid())
+  userId           String?       @unique
+  user             User?         @relation(fields: [userId], references: [id])
   roomId           String
-  room             Room         @relation(fields: [roomId], references: [id])
+  room             Room          @relation(fields: [roomId], references: [id])
   fullName         String
   phone            String
-  idCardNumber     String?      // KTP
-  emergencyContact String?
-  startDate        DateTime
-  endDate          DateTime?
-  status           String       @default("ACTIVE") // ACTIVE, ENDED
+  idCardNumber     String?       // KTP
+  idCardImage      String?
+  emergencyContact String?       // Nama & No HP Kontak Darurat
+  startDate        DateTime      // Tanggal Masuk Kost
+  endDate          DateTime?     // Masa Sewa Berakhir
+  depositAmount    Float         @default(0) // Uang Jaminan / Deposit
+  depositStatus    DepositStatus @default(HELD) // HELD, REFUNDED, DEDUCTED
+  status           String        @default("ACTIVE") // ACTIVE, ENDED
   notes            String?
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
   invoices         Invoice[]
   complaints       Complaint[]

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useKost } from "@/lib/kost-context";
 import { RoomData } from "@/lib/data";
+import ImageUploader from "@/components/ui/image-uploader";
 import {
   Plus,
   X,
@@ -563,21 +564,16 @@ export default function AdminKamarPage() {
                 />
               </div>
 
-              {/* Row 4: URL Foto Kamar */}
+              {/* Row 4: Upload Foto Kamar Langsung */}
               <div>
-                <label className="block text-zinc-400 mb-1 font-medium">Link Foto Kamar</label>
-                <input
-                  type="text"
+                <label className="block text-zinc-400 mb-1.5 font-medium">
+                  Foto Kamar (Upload Langsung dari Perangkat)
+                </label>
+                <ImageUploader
                   value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://images.unsplash.com/..."
-                  className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs focus:outline-none focus:border-zinc-500"
+                  onChange={(url) => setImageUrl(url)}
+                  presetFallback={PRESET_IMAGES[type]}
                 />
-                {imageUrl && (
-                  <div className="mt-2 h-20 rounded-lg overflow-hidden bg-zinc-900 border border-zinc-800">
-                    <img src={imageUrl} alt="Preview" className="w-full h-full object-cover" />
-                  </div>
-                )}
               </div>
 
               {/* Row 5: Checklist Fasilitas */}
@@ -749,21 +745,16 @@ export default function AdminKamarPage() {
                 />
               </div>
 
-              {/* Row 4: URL Foto Kamar */}
+              {/* Row 4: Upload Foto Kamar Langsung */}
               <div>
-                <label className="block text-zinc-400 mb-1 font-medium">Link Foto Kamar</label>
-                <input
-                  type="text"
+                <label className="block text-zinc-400 mb-1.5 font-medium">
+                  Foto Kamar (Upload Langsung dari Perangkat)
+                </label>
+                <ImageUploader
                   value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://images.unsplash.com/..."
-                  className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs focus:outline-none focus:border-zinc-500"
+                  onChange={(url) => setImageUrl(url)}
+                  presetFallback={editingRoom?.image}
                 />
-                {imageUrl && (
-                  <div className="mt-2 h-20 rounded-lg overflow-hidden bg-zinc-900 border border-zinc-800">
-                    <img src={imageUrl} alt="Preview" className="w-full h-full object-cover" />
-                  </div>
-                )}
               </div>
 
               {/* Row 5: Checklist Fasilitas */}

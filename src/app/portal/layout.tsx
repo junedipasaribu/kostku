@@ -160,7 +160,7 @@ export default function TenantLayout({
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 min-w-0 p-6 sm:p-8 lg:p-10 overflow-y-auto max-w-5xl mx-auto w-full">
+      <main className="flex-1 min-w-0 p-6 sm:p-8 lg:p-10 overflow-y-auto overflow-x-hidden max-w-5xl mx-auto w-full">
         {children}
       </main>
     </div>

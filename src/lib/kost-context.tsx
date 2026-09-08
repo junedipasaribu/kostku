@@ -33,6 +33,8 @@ interface KostContextType {
   logout: () => void;
   updateRoomStatus: (roomId: string, status: "AVAILABLE" | "OCCUPIED" | "MAINTENANCE") => void;
   addRoom: (room: Omit<RoomData, "id">) => void;
+  updateRoom: (roomId: string, updatedData: Partial<Omit<RoomData, "id">>) => void;
+  deleteRoom: (roomId: string) => void;
   addTenant: (tenant: Omit<TenantData, "id">) => void;
   updateInvoiceStatus: (invoiceId: string, status: "UNPAID" | "PENDING_VERIFICATION" | "PAID" | "OVERDUE", paymentProof?: string, method?: string) => void;
   addExpense: (expense: Omit<ExpenseData, "id">) => void;
@@ -64,8 +66,17 @@ export function KostProvider({ children }: { children: React.ReactNode }) {
   // Load from localStorage if available
   useEffect(() => {
     try {
+      const savedRooms = localStorage.getItem("kostku_rooms");
+      if (savedRooms) setRooms(JSON.parse(savedRooms));
+
+      const savedTenants = localStorage.getItem("kostku_tenants");
+      if (savedTenants) setTenants(JSON.parse(savedTenants));
+
       const savedInvoices = localStorage.getItem("kostku_invoices");
       if (savedInvoices) setInvoices(JSON.parse(savedInvoices));
+
+      const savedExpenses = localStorage.getItem("kostku_expenses");
+      if (savedExpenses) setExpenses(JSON.parse(savedExpenses));
 
       const savedComplaints = localStorage.getItem("kostku_complaints");
       if (savedComplaints) setComplaints(JSON.parse(savedComplaints));
@@ -102,25 +113,65 @@ export function KostProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateRoomStatus = (roomId: string, status: "AVAILABLE" | "OCCUPIED" | "MAINTENANCE") => {
-    setRooms((prev) =>
-      prev.map((r) => (r.id === roomId ? { ...r, status } : r))
-    );
+    setRooms((prev) => {
+      const updated = prev.map((r) => (r.id === roomId ? { ...r, status } : r));
+      try {
+        localStorage.setItem("kostku_rooms", JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
   };
 
   const addRoom = (newRoom: Omit<RoomData, "id">) => {
     const id = `r${Date.now().toString().slice(-4)}`;
-    setRooms((prev) => [...prev, { ...newRoom, id }]);
+    setRooms((prev) => {
+      const updated = [...prev, { ...newRoom, id }];
+      try {
+        localStorage.setItem("kostku_rooms", JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const updateRoom = (roomId: string, updatedData: Partial<Omit<RoomData, "id">>) => {
+    setRooms((prev) => {
+      const updated = prev.map((r) => (r.id === roomId ? { ...r, ...updatedData } : r));
+      try {
+        localStorage.setItem("kostku_rooms", JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const deleteRoom = (roomId: string) => {
+    setRooms((prev) => {
+      const updated = prev.filter((r) => r.id !== roomId);
+      try {
+        localStorage.setItem("kostku_rooms", JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
   };
 
   const addTenant = (newTenant: Omit<TenantData, "id">) => {
     const id = `t${Date.now().toString().slice(-4)}`;
-    setTenants((prev) => [...prev, { ...newTenant, id }]);
+    setTenants((prev) => {
+      const updated = [...prev, { ...newTenant, id }];
+      try {
+        localStorage.setItem("kostku_tenants", JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
     // Auto update room status to OCCUPIED
-    setRooms((prev) =>
-      prev.map((r) =>
-        r.id === newTenant.roomId ? { ...r, status: "OCCUPIED", tenantName: newTenant.fullName } : r
-      )
-    );
+    setRooms((prev) => {
+      const updated = prev.map((r) =>
+        r.id === newTenant.roomId ? { ...r, status: "OCCUPIED" as const, tenantName: newTenant.fullName } : r
+      );
+      try {
+        localStorage.setItem("kostku_rooms", JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
   };
 
   const updateInvoiceStatus = (
@@ -194,6 +245,8 @@ export function KostProvider({ children }: { children: React.ReactNode }) {
         logout,
         updateRoomStatus,
         addRoom,
+        updateRoom,
+        deleteRoom,
         addTenant,
         updateInvoiceStatus,
         addExpense,

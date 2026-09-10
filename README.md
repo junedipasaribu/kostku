@@ -17,6 +17,34 @@ Website dan sistem operasional kost modern berbasis Next.js App Router, Tailwind
 
 ---
 
+## ✨ Fitur Utama Sistem
+
+### 🔴 Operasional Admin & Manajemen
+1. **Dashboard Metrik & Alert Real-Time**: 
+   - Banner merah otomatis untuk tagihan jatuh tempo (≤ 3 hari / lewat jatuh tempo) dengan tombol kirim WhatsApp tagihan instan.
+   - Alert peringatan masa sewa penghuni yang segera berakhir.
+2. **Katalog & Manajemen Kamar**:
+   - Status kamar dinamis (*AVAILABLE*, *OCCUPIED*, *MAINTENANCE*).
+   - Riwayat Log Maintenance per kamar (catat tanggal perbaikan, estimasi/biaya, teknisi penanggung jawab, dan deskripsi).
+3. **Pencatatan Keuangan & Pengeluaran**:
+   - Chart horizontal distribusi pengeluaran per kategori (Listrik, Air, Internet, Kebersihan, Perbaikan, Operasional) lengkap dengan nominal dan persentase otomatis.
+   - Rekap saldo kas, total pemasukan sewa, dan pengeluaran operasional.
+4. **Manajemen Penghuni & Tagihan**:
+   - Filter cepat status pembayaran (Lunas, Belum Lunas, Menunggu Verifikasi).
+   - Verifikasi bukti transfer yang diunggah penghuni.
+
+### 🟢 Portal Penghuni (Self-Service)
+1. **Upload Bukti Transfer File**:
+   - Area drag-and-drop unggah foto bukti bayar (gambar max 5MB) dengan preview instan dan konversi base64 otomatis.
+2. **Informasi Masa Sewa Visual**:
+   - Progress bar masa sewa kamar dengan indikator sisa hari aktif.
+3. **Status Deposit & Kontak Darurat**:
+   - Badge status uang deposit (Tersimpan aman / Telah dikembalikan).
+   - Kontak darurat pengelola kost dengan tombol panggilan/WhatsApp langsung.
+
+
+---
+
 ## 🚀 Persiapan GitHub Secrets untuk CI/CD
 
 Tambahkan Secret berikut pada repository GitHub (`Settings > Secrets and variables > Actions`):

@@ -17,6 +17,9 @@ import {
   Sparkles,
   DollarSign,
   Info,
+  Wrench,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 const PRESET_FACILITIES = [
@@ -41,7 +44,7 @@ const PRESET_IMAGES: Record<string, string> = {
 };
 
 export default function AdminKamarPage() {
-  const { rooms, updateRoomStatus, addRoom, updateRoom, deleteRoom } = useKost();
+  const { rooms, updateRoomStatus, addRoom, updateRoom, deleteRoom, addMaintenanceLog } = useKost();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterFloor, setFilterFloor] = useState<number | "ALL">("ALL");
@@ -51,6 +54,14 @@ export default function AdminKamarPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingRoom, setEditingRoom] = useState<RoomData | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+  const [maintenanceRoomId, setMaintenanceRoomId] = useState<string | null>(null);
+  const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set());
+
+  // Maintenance Log Form State
+  const [mlogDesc, setMlogDesc] = useState("");
+  const [mlogDate, setMlogDate] = useState(new Date().toISOString().split("T")[0]);
+  const [mlogCost, setMlogCost] = useState<number | "">("");
+  const [mlogTech, setMlogTech] = useState("");
 
   // Form States (Used for both Add & Edit)
   const [roomNumber, setRoomNumber] = useState("");
@@ -209,6 +220,31 @@ export default function AdminKamarPage() {
       deleteRoom(room.id);
       showNotification(`Kamar ${room.roomNumber} telah dihapus.`);
     }
+  };
+
+  const handleAddMaintenanceLog = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!maintenanceRoomId || !mlogDesc.trim()) return;
+    addMaintenanceLog(maintenanceRoomId, {
+      date: mlogDate,
+      description: mlogDesc.trim(),
+      cost: mlogCost !== "" ? Number(mlogCost) : undefined,
+      technician: mlogTech.trim() || undefined,
+    });
+    const room = rooms.find((r) => r.id === maintenanceRoomId);
+    setMaintenanceRoomId(null);
+    setMlogDesc("");
+    setMlogCost("");
+    setMlogTech("");
+    showNotification(`Catatan perbaikan untuk Kamar ${room?.roomNumber} berhasil disimpan!`);
+  };
+
+  const toggleLogExpanded = (roomId: string) => {
+    setExpandedLogs((prev) => {
+      const next = new Set(prev);
+      next.has(roomId) ? next.delete(roomId) : next.add(roomId);
+      return next;
+    });
   };
 
   return (
@@ -466,14 +502,52 @@ export default function AdminKamarPage() {
                     </button>
                   </div>
 
-                  <button
-                    onClick={() => handleDeleteRoom(room)}
-                    className="p-1.5 rounded text-zinc-500 hover:text-rose-400 hover:bg-zinc-800 transition-colors"
-                    title="Hapus Kamar"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    {room.status === "MAINTENANCE" && (
+                      <button
+                        onClick={() => { setMaintenanceRoomId(room.id); setMlogDate(new Date().toISOString().split("T")[0]); }}
+                        className="p-1.5 rounded text-zinc-500 hover:text-amber-300 hover:bg-zinc-800 transition-colors"
+                        title="Catat Perbaikan"
+                      >
+                        <Wrench className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleDeleteRoom(room)}
+                      className="p-1.5 rounded text-zinc-500 hover:text-rose-400 hover:bg-zinc-800 transition-colors"
+                      title="Hapus Kamar"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
+
+                {/* Maintenance Log */}
+                {room.status === "MAINTENANCE" && (room.maintenanceLog?.length ?? 0) > 0 && (
+                  <div className="mt-3 border-t border-zinc-800/60 pt-3">
+                    <button
+                      onClick={() => toggleLogExpanded(room.id)}
+                      className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors"
+                    >
+                      {expandedLogs.has(room.id) ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                      Log Perbaikan ({room.maintenanceLog!.length})
+                    </button>
+                    {expandedLogs.has(room.id) && (
+                      <div className="mt-2 space-y-2">
+                        {room.maintenanceLog!.map((log) => (
+                          <div key={log.id} className="p-2.5 rounded-lg bg-zinc-950/60 border border-zinc-800/60 text-[11px] space-y-0.5">
+                            <div className="flex items-center justify-between">
+                              <span className="text-zinc-300 font-medium">{log.date}</span>
+                              {log.cost && <span className="text-amber-400">Rp {log.cost.toLocaleString("id-ID")}</span>}
+                            </div>
+                            <p className="text-zinc-400">{log.description}</p>
+                            {log.technician && <p className="text-zinc-500">Teknisi: {log.technician}</p>}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -828,6 +902,81 @@ export default function AdminKamarPage() {
           </div>
         </div>
       )}
+      {/* Modal: Catat Perbaikan */}
+      {maintenanceRoomId && (() => {
+        const room = rooms.find((r) => r.id === maintenanceRoomId);
+        return (
+          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-2xl">
+              <div className="flex items-center justify-between pb-3.5 border-b border-zinc-800 mb-4">
+                <div className="flex items-center gap-2">
+                  <Wrench className="w-4 h-4 text-amber-400" />
+                  <h3 className="text-sm font-semibold text-white">Catat Perbaikan — Kamar {room?.roomNumber}</h3>
+                </div>
+                <button onClick={() => setMaintenanceRoomId(null)} className="text-zinc-500 hover:text-white">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleAddMaintenanceLog} className="space-y-3 text-xs">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-zinc-400 mb-1 font-medium">Tanggal Perbaikan</label>
+                    <input
+                      type="date"
+                      value={mlogDate}
+                      onChange={(e) => setMlogDate(e.target.value)}
+                      required
+                      className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-zinc-400 mb-1 font-medium">Biaya (Rp, opsional)</label>
+                    <input
+                      type="number"
+                      value={mlogCost}
+                      onChange={(e) => setMlogCost(e.target.value === "" ? "" : Number(e.target.value))}
+                      placeholder="0"
+                      min={0}
+                      step={5000}
+                      className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs font-mono"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-zinc-400 mb-1 font-medium">Deskripsi Perbaikan <span className="text-rose-400">*</span></label>
+                  <textarea
+                    value={mlogDesc}
+                    onChange={(e) => setMlogDesc(e.target.value)}
+                    rows={3}
+                    required
+                    placeholder="Contoh: Servis AC, pipa bocor diperbaiki..."
+                    className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs resize-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-zinc-400 mb-1 font-medium">Nama Teknisi (opsional)</label>
+                  <input
+                    type="text"
+                    value={mlogTech}
+                    onChange={(e) => setMlogTech(e.target.value)}
+                    placeholder="Nama teknisi / vendor"
+                    className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs"
+                  />
+                </div>
+                <div className="pt-3 border-t border-zinc-800 flex justify-end gap-2">
+                  <button type="button" onClick={() => setMaintenanceRoomId(null)} className="px-3.5 py-1.5 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white">
+                    Batal
+                  </button>
+                  <button type="submit" className="px-4 py-1.5 rounded-lg bg-white text-zinc-950 font-medium hover:bg-zinc-200 transition-colors">
+                    Simpan Log
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

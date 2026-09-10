@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useKost } from "@/lib/kost-context";
-import { Copy, QrCode, Printer, ChevronDown, ChevronUp } from "lucide-react";
+import { Copy, QrCode, Printer, ChevronDown, ChevronUp, Upload, ImageIcon } from "lucide-react";
 
 function InvoiceReceipt({
   inv,
@@ -201,14 +201,28 @@ export default function TenantTagihanPage() {
     myInvoices[0];
 
   const [paymentMethod, setPaymentMethod] = useState("Transfer BCA");
-  const [proofUrl, setProofUrl] = useState(
-    "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80"
-  );
+  const [proofUrl, setProofUrl] = useState("");
+  const [proofPreview, setProofPreview] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState(false);
   const [showQris, setShowQris] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [printInvoice, setPrintInvoice] = useState<typeof myInvoices[0] | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { alert("Hanya file gambar (JPG, PNG, dll) yang diizinkan."); return; }
+    if (file.size > 5 * 1024 * 1024) { alert("Ukuran file maksimal 5MB."); return; }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setProofUrl(dataUrl);
+      setProofPreview(dataUrl);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const copyBankToClipboard = () => {
     navigator.clipboard.writeText(building.bankAccount);
@@ -315,35 +329,58 @@ export default function TenantTagihanPage() {
               {activeInvoice.status === "UNPAID" && (
                 <form onSubmit={handleUploadPayment} className="pt-3 border-t border-zinc-800/60 space-y-3 text-xs">
                   <span className="block font-medium text-white">Konfirmasi Bukti Transfer:</span>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-zinc-400 mb-1">Metode Pembayaran</label>
-                      <select
-                        value={paymentMethod}
-                        onChange={(e) => setPaymentMethod(e.target.value)}
-                        className="w-full px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-white text-xs"
-                      >
-                        <option value="Transfer BCA">Transfer BCA</option>
-                        <option value="Transfer Mandiri">Transfer Mandiri</option>
-                        <option value="QRIS">QRIS</option>
-                        <option value="Tunai">Tunai</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-zinc-400 mb-1">Link Foto Bukti Transfer</label>
-                      <input
-                        type="text"
-                        value={proofUrl}
-                        onChange={(e) => setProofUrl(e.target.value)}
-                        required
-                        className="w-full px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-white text-xs"
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-zinc-400 mb-1">Metode Pembayaran</label>
+                    <select
+                      value={paymentMethod}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="w-full px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-white text-xs"
+                    >
+                      <option value="Transfer BCA">Transfer BCA</option>
+                      <option value="Transfer Mandiri">Transfer Mandiri</option>
+                      <option value="QRIS">QRIS</option>
+                      <option value="Tunai">Tunai</option>
+                    </select>
                   </div>
+
+                  {/* File Upload */}
+                  <div>
+                    <label className="block text-zinc-400 mb-1">Foto Bukti Transfer <span className="text-rose-400">*</span></label>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className={`w-full flex items-center justify-center gap-2 py-6 rounded-lg border-2 border-dashed transition-colors ${
+                        proofPreview
+                          ? "border-zinc-700 bg-zinc-950/40"
+                          : "border-zinc-800 hover:border-zinc-600 bg-zinc-950/20 hover:bg-zinc-950/40"
+                      }`}
+                    >
+                      {proofPreview ? (
+                        <div className="relative w-full">
+                          <img src={proofPreview} alt="Preview" className="max-h-40 object-contain mx-auto rounded" />
+                          <p className="text-[11px] text-zinc-500 mt-2 text-center">Klik untuk ganti foto</p>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-1.5 text-zinc-500">
+                          <Upload className="w-5 h-5" />
+                          <span className="text-xs">Klik untuk upload foto bukti transfer</span>
+                          <span className="text-[11px]">JPG, PNG, max 5MB</span>
+                        </div>
+                      )}
+                    </button>
+                  </div>
+
                   <button
                     type="submit"
-                    disabled={isSubmitting}
-                    className="w-full py-2 rounded-lg bg-white text-black font-medium text-xs hover:bg-zinc-200 transition-colors"
+                    disabled={isSubmitting || !proofUrl}
+                    className="w-full py-2 rounded-lg bg-white text-black font-medium text-xs hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? "Mengirim..." : "Kirim Bukti Pembayaran"}
                   </button>

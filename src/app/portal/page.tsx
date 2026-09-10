@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useKost } from "@/lib/kost-context";
-import { Copy, ChevronRight } from "lucide-react";
+import { Copy, ChevronRight, Phone, Shield, CalendarDays } from "lucide-react";
 
 export default function TenantHomePage() {
   const { building, currentUser, tenants, rooms, invoices } = useKost();
@@ -11,7 +11,9 @@ export default function TenantHomePage() {
   const tenant = tenants.find((t) => t.id === currentUser.tenantId) || tenants[0];
   const room = rooms.find((r) => r.roomNumber === (tenant?.roomNumber || "101"));
 
-  const myInvoices = invoices.filter((i) => i.roomNumber === tenant?.roomNumber || i.tenantPhone === tenant?.phone);
+  const myInvoices = invoices.filter(
+    (i) => i.roomNumber === tenant?.roomNumber || i.tenantPhone === tenant?.phone
+  );
   const currentInvoice = myInvoices[0];
 
   const isUnpaid = currentInvoice?.status === "UNPAID";
@@ -21,6 +23,23 @@ export default function TenantHomePage() {
     navigator.clipboard.writeText(building.bankAccount);
     alert(`Nomor rekening ${building.bankAccount} berhasil disalin!`);
   };
+
+  // Hitung progress masa sewa (startDate → endDate)
+  const startDate = tenant?.startDate ? new Date(tenant.startDate) : null;
+  const endDate = tenant?.endDate ? new Date(tenant.endDate) : null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  let progressPct = 0;
+  let daysLeft = 0;
+  let totalDays = 0;
+
+  if (startDate && endDate) {
+    totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    const elapsed = Math.ceil((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    daysLeft = Math.max(0, Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
+    progressPct = Math.min(100, Math.max(0, Math.round((elapsed / totalDays) * 100)));
+  }
 
   return (
     <div className="space-y-6">
@@ -39,7 +58,9 @@ export default function TenantHomePage() {
         <div className="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-white">Tagihan {currentInvoice.periodMonth} {currentInvoice.periodYear}</span>
+              <span className="font-semibold text-white">
+                Tagihan {currentInvoice.periodMonth} {currentInvoice.periodYear}
+              </span>
               <span
                 className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
                   isUnpaid
@@ -94,33 +115,104 @@ export default function TenantHomePage() {
           </div>
         </div>
 
-        {/* Deposit & Rent details */}
+        {/* Right column */}
         <div className="space-y-4">
+          {/* Deposit Status */}
           <div className="p-5 rounded-xl bg-zinc-900/30 border border-zinc-800/80 space-y-2">
-            <span className="text-sm font-semibold text-white">Uang Jaminan (Deposit)</span>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-white flex items-center gap-1.5">
+                <Shield className="w-4 h-4 text-zinc-400" />
+                Uang Jaminan (Deposit)
+              </span>
+              <span
+                className={`text-[10px] px-2 py-0.5 rounded font-semibold ${
+                  tenant?.depositStatus === "HELD"
+                    ? "bg-emerald-950/60 text-emerald-400 border border-emerald-900/50"
+                    : tenant?.depositStatus === "REFUNDED"
+                    ? "bg-blue-950/60 text-blue-400 border border-blue-900/50"
+                    : "bg-red-950/60 text-red-400 border border-red-900/50"
+                }`}
+              >
+                {tenant?.depositStatus === "HELD"
+                  ? "Tersimpan Aman"
+                  : tenant?.depositStatus === "REFUNDED"
+                  ? "Dikembalikan"
+                  : "Dipotong"}
+              </span>
+            </div>
             <p className="text-xl font-semibold text-white">
               Rp {tenant?.depositAmount.toLocaleString("id-ID")}
             </p>
             <p className="text-[11px] text-zinc-500 leading-relaxed">
-              Deposit tersimpan aman di pengelola dan dapat diklaim kembali saat masa sewa Anda berakhir sesuai ketentuan.
+              Deposit dapat diklaim kembali saat masa sewa berakhir sesuai ketentuan.
             </p>
           </div>
 
+          {/* Masa Sewa Progress */}
           <div className="p-5 rounded-xl bg-zinc-900/30 border border-zinc-800/80 space-y-3">
-            <span className="text-sm font-semibold text-white">Jadwal Sewa</span>
+            <span className="text-sm font-semibold text-white flex items-center gap-1.5">
+              <CalendarDays className="w-4 h-4 text-zinc-400" />
+              Jadwal Sewa
+            </span>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="p-2.5 rounded-lg bg-zinc-950/60 border border-zinc-850">
                 <span className="text-zinc-500 text-[11px]">Tanggal Masuk:</span>
                 <p className="text-white font-medium mt-0.5">{tenant?.startDate}</p>
               </div>
               <div className="p-2.5 rounded-lg bg-zinc-950/60 border border-zinc-850">
-                <span className="text-zinc-500 text-[11px]">Jatuh Tempo:</span>
-                <p className="text-white font-medium mt-0.5">{currentInvoice?.dueDate || "Tgl 10"}</p>
+                <span className="text-zinc-500 text-[11px]">Berakhir:</span>
+                <p className="text-white font-medium mt-0.5">{tenant?.endDate || "—"}</p>
               </div>
             </div>
+
+            {startDate && endDate && (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-zinc-500">Progress masa sewa</span>
+                  <span className={`font-medium ${daysLeft <= 14 ? "text-amber-400" : "text-zinc-400"}`}>
+                    {daysLeft <= 0 ? "Sudah berakhir" : `${daysLeft} hari tersisa`}
+                  </span>
+                </div>
+                <div className="h-2 rounded-full bg-zinc-900 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all ${
+                      daysLeft <= 14 ? "bg-amber-500/70" : "bg-emerald-600/70"
+                    }`}
+                    style={{ width: `${progressPct}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-[10px] text-zinc-600">
+                  <span>{tenant?.startDate}</span>
+                  <span>{tenant?.endDate}</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Kontak Darurat */}
+      {(tenant?.emergencyContactName || tenant?.emergencyContactPhone) && (
+        <div className="p-5 rounded-xl bg-zinc-900/30 border border-zinc-800/80">
+          <span className="text-sm font-semibold text-white flex items-center gap-1.5 mb-3">
+            <Phone className="w-4 h-4 text-zinc-400" />
+            Kontak Darurat
+          </span>
+          <div className="flex items-center justify-between text-xs">
+            <div>
+              <p className="text-white font-medium">{tenant?.emergencyContactName}</p>
+              <p className="text-zinc-400 mt-0.5 font-mono">{tenant?.emergencyContactPhone}</p>
+            </div>
+            <a
+              href={`tel:${tenant?.emergencyContactPhone}`}
+              className="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium flex items-center gap-1.5 transition-colors text-[11px]"
+            >
+              <Phone className="w-3 h-3" />
+              Hubungi
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* Bank Account */}
       <div className="p-5 rounded-xl bg-zinc-900/30 border border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">

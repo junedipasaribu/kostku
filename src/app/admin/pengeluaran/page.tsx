@@ -15,6 +15,21 @@ export default function AdminPengeluaranPage() {
 
   const totalExpense = expenses.reduce((acc, e) => acc + e.amount, 0);
 
+  // Chart data: pengeluaran per kategori
+  const byCategory = expenses.reduce<Record<string, number>>((acc, e) => {
+    acc[e.category] = (acc[e.category] || 0) + e.amount;
+    return acc;
+  }, {});
+  const maxAmount = Math.max(...Object.values(byCategory), 1);
+
+  const CATEGORY_COLORS: Record<string, string> = {
+    "Listrik": "bg-yellow-600/60",
+    "Air/PDAM": "bg-blue-600/60",
+    "WiFi": "bg-indigo-600/60",
+    "Kebersihan & Sampah": "bg-emerald-700/60",
+    "Maintenance & Perbaikan": "bg-orange-600/60",
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!description) return;
@@ -62,6 +77,34 @@ export default function AdminPengeluaranPage() {
         </div>
         <span className="text-xs text-zinc-500">{expenses.length} transaksi tercatat</span>
       </div>
+
+      {/* Chart: Breakdown per Kategori */}
+      {Object.keys(byCategory).length > 0 && (
+        <div className="p-5 rounded-xl bg-zinc-900/30 border border-zinc-800/80">
+          <h2 className="text-sm font-semibold text-white mb-4">Breakdown per Kategori</h2>
+          <div className="space-y-3">
+            {Object.entries(byCategory)
+              .sort((a, b) => b[1] - a[1])
+              .map(([cat, amt]) => {
+                const pct = Math.round((amt / totalExpense) * 100);
+                return (
+                  <div key={cat} className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-zinc-300 font-medium">{cat}</span>
+                      <span className="text-zinc-400">{pct}% · Rp {amt.toLocaleString("id-ID")}</span>
+                    </div>
+                    <div className="h-4 rounded bg-zinc-900 overflow-hidden">
+                      <div
+                        className={`h-full rounded transition-all ${CATEGORY_COLORS[cat] || 'bg-zinc-600/60'}`}
+                        style={{ width: `${(amt / maxAmount) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      )}
 
       {/* Table */}
       <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/30 overflow-hidden">

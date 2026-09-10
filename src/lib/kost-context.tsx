@@ -8,6 +8,7 @@ import {
   InvoiceData,
   ExpenseData,
   ComplaintData,
+  MaintenanceLog,
   initialBuildingInfo,
   initialRooms,
   initialTenants,
@@ -35,6 +36,7 @@ interface KostContextType {
   addRoom: (room: Omit<RoomData, "id">) => void;
   updateRoom: (roomId: string, updatedData: Partial<Omit<RoomData, "id">>) => void;
   deleteRoom: (roomId: string) => void;
+  addMaintenanceLog: (roomId: string, log: Omit<MaintenanceLog, "id">) => void;
   addTenant: (tenant: Omit<TenantData, "id">) => void;
   updateInvoiceStatus: (invoiceId: string, status: "UNPAID" | "PENDING_VERIFICATION" | "PAID" | "OVERDUE", paymentProof?: string, method?: string) => void;
   addExpense: (expense: Omit<ExpenseData, "id">) => void;
@@ -153,6 +155,21 @@ export function KostProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const addMaintenanceLog = (roomId: string, log: Omit<MaintenanceLog, "id">) => {
+    const id = `mlog-${Date.now().toString().slice(-6)}`;
+    setRooms((prev) => {
+      const updated = prev.map((r) =>
+        r.id === roomId
+          ? { ...r, maintenanceLog: [{ ...log, id }, ...(r.maintenanceLog || [])] }
+          : r
+      );
+      try {
+        localStorage.setItem("kostku_rooms", JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
   const addTenant = (newTenant: Omit<TenantData, "id">) => {
     const id = `t${Date.now().toString().slice(-4)}`;
     setTenants((prev) => {
@@ -247,6 +264,7 @@ export function KostProvider({ children }: { children: React.ReactNode }) {
         addRoom,
         updateRoom,
         deleteRoom,
+        addMaintenanceLog,
         addTenant,
         updateInvoiceStatus,
         addExpense,

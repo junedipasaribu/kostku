@@ -10,6 +10,14 @@ export interface BuildingInfo {
   qrisUrl: string;
 }
 
+export interface MaintenanceLog {
+  id: string;
+  date: string;
+  description: string;
+  cost?: number;
+  technician?: string;
+}
+
 export interface RoomData {
   id: string;
   roomNumber: string;
@@ -21,6 +29,7 @@ export interface RoomData {
   facilities: string[];
   tenantName?: string;
   image: string;
+  maintenanceLog?: MaintenanceLog[];
 }
 
 export interface TenantData {
@@ -133,6 +142,15 @@ export const initialRooms: RoomData[] = [
     status: "MAINTENANCE",
     facilities: ["AC", "Kamar Mandi Luar", "WiFi 100 Mbps", "Kasur Single"],
     image: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=800&q=80",
+    maintenanceLog: [
+      {
+        id: "mlog-01",
+        date: "2026-09-03",
+        description: "Servis rutin & cuci AC — pipa pembuangan tersumbat, dibersihkan.",
+        cost: 350000,
+        technician: "Pak Wahyu (Teknisi AC)",
+      },
+    ],
   },
   {
     id: "r201",
@@ -193,6 +211,7 @@ export const initialTenants: TenantData[] = [
     emergencyContactName: "Hendra Santoso (Ayah)",
     emergencyContactPhone: "6281298765401",
     startDate: "2026-01-10",
+    endDate: "2026-09-14", // Hampir habis — 4 hari lagi (trigger alert)
     depositAmount: 1000000,
     depositStatus: "HELD",
     status: "ACTIVE",
@@ -207,6 +226,7 @@ export const initialTenants: TenantData[] = [
     emergencyContactName: "Nurul (Ibu)",
     emergencyContactPhone: "6281298765402",
     startDate: "2026-02-01",
+    endDate: "2027-02-01",
     depositAmount: 1000000,
     depositStatus: "HELD",
     status: "ACTIVE",
@@ -221,6 +241,7 @@ export const initialTenants: TenantData[] = [
     emergencyContactName: "Rudi Arya (Kakak)",
     emergencyContactPhone: "6281298765403",
     startDate: "2025-11-15",
+    endDate: "2026-11-15",
     depositAmount: 1500000,
     depositStatus: "HELD",
     status: "ACTIVE",
@@ -235,6 +256,7 @@ export const initialTenants: TenantData[] = [
     emergencyContactName: "Rina (Ibu)",
     emergencyContactPhone: "6281298765404",
     startDate: "2025-12-01",
+    endDate: "2026-12-01",
     depositAmount: 1000000,
     depositStatus: "HELD",
     status: "ACTIVE",

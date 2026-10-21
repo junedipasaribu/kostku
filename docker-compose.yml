@@ -3,11 +3,11 @@ services:
     image: postgres:15-alpine
     container_name: kostku-db-dev
     environment:
-      POSTGRES_DB: kostku_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres_password
+      POSTGRES_DB: ${DB_NAME:-kostku_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in the project .env file}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - kostku_postgres_data_dev:/var/lib/postgresql/data
     restart: always

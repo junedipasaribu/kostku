@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useKost } from "@/lib/kost-context";
-import { ShieldCheck, User, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,7 +12,7 @@ export default function LoginPage() {
   const [role, setRole] = useState<"ADMIN" | "TENANT">("ADMIN");
   const [selectedTenantId, setSelectedTenantId] = useState<string>("t101");
   const [email, setEmail] = useState("admin@kostku.com");
-  const [password, setPassword] = useState("admin123");
+  const [password, setPassword] = useState("");
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +54,10 @@ export default function LoginPage() {
 
       {/* Main Login Card */}
       <div className="w-full max-w-sm bg-zinc-950 border border-zinc-800/80 rounded-2xl p-6 shadow-xl">
+        <div className="mb-5 rounded-lg border border-amber-800/70 bg-amber-950/40 px-3 py-2.5 text-[11px] leading-relaxed text-amber-200">
+          Mode demo: login ini belum diverifikasi oleh server dan data hanya tersimpan di browser. Jangan masukkan data penghuni atau data pembayaran nyata.
+        </div>
+
         {/* Role Tabs */}
         <div className="grid grid-cols-2 gap-1 p-1 rounded-lg bg-zinc-900 border border-zinc-800 mb-6 text-xs">
           <button

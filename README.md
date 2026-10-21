@@ -4,6 +4,8 @@ Website dan sistem operasional kost modern berbasis Next.js App Router, Tailwind
 
 🌐 **Domain Produksi**: `https://kostku.juns-digital.my.id`
 
+> **Status keamanan:** aplikasi ini masih prototipe demo. Login admin/penyewa belum diverifikasi server; data operasional berada di `localStorage` browser dan dapat diubah oleh pengguna browser. Jangan simpan data penghuni, KTP, bukti bayar, atau data keuangan nyata sampai autentikasi server dan otorisasi per pengguna selesai dibuat. Endpoint unggah dinonaktifkan pada produksi untuk mencegah unggahan publik.
+
 ---
 
 ## 🛠️ Tech Stack
@@ -47,7 +49,7 @@ Website dan sistem operasional kost modern berbasis Next.js App Router, Tailwind
 
 ## 🚀 Persiapan GitHub Secrets untuk CI/CD
 
-Tambahkan Secret berikut pada repository GitHub (`Settings > Secrets and variables > Actions`):
+Rahasia aplikasi disimpan pada file `.env` di VPS dan jangan di-commit. File tersebut diabaikan oleh Git; `.env.example` hanya template tanpa nilai rahasia. GitHub Actions Secrets hanya diperlukan untuk akses otomasi ke server apabila workflow CI/CD dipasang:
 
 | Nama Secret | Deskripsi |
 | :--- | :--- |
@@ -56,8 +58,8 @@ Tambahkan Secret berikut pada repository GitHub (`Settings > Secrets and variabl
 | `SSH_USER` | Username SSH VPS (misal: `root` atau `ubuntu`) |
 | `SSH_KEY` | Private SSH Key untuk otentikasi login ke server |
 | `SSH_PORT` | Port SSH server (default: `22`) |
-| `DB_PASSWORD` | Password untuk PostgreSQL produksi |
-| `NEXTAUTH_SECRET` | Kunci enkripsi sesi (acak & aman) |
+
+**Catatan:** login pada prototipe ini belum memakai autentikasi server. `NEXTAUTH_SECRET` tidak mengaktifkan autentikasi dengan sendirinya; jangan gunakan panel ini untuk data penghuni sungguhan sebelum autentikasi dan otorisasi server dibuat.
 
 ---
 

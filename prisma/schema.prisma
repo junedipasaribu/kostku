@@ -53,16 +53,29 @@ model BuildingConfig {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String
-  phone     String?
-  role      Role     @default(TENANT)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String    @map("password")
+  name         String
+  phone        String?
+  role         Role      @default(TENANT)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   tenantProfile Tenant?
+  sessions      Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model Room {

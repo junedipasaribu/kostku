@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import path from "node:path";
 import fs from "fs/promises";
+import { getSessionUser, isSameOrigin } from "@/lib/auth";
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 const MAX_REQUEST_BYTES = MAX_FILE_BYTES + 64 * 1024;
@@ -24,9 +25,18 @@ const imageTypes = [
 ];
 
 export async function POST(req: NextRequest) {
-  // This prototype has no server-side authentication yet. Never expose a writable upload route in production.
+  if (!isSameOrigin(req)) {
+    return NextResponse.json({ error: "Permintaan tidak valid" }, { status: 403 });
+  }
+
+  const user = await getSessionUser();
+  if (!user || (user.role !== "OWNER" && user.role !== "ADMIN")) {
+    return NextResponse.json({ error: "Tidak memiliki akses" }, { status: 401 });
+  }
+
+  // Production uploads remain off until private durable object storage and database-backed records are configured.
   if (process.env.NODE_ENV === "production") {
-    return NextResponse.json({ error: "Upload dinonaktifkan sampai autentikasi server tersedia" }, { status: 503 });
+    return NextResponse.json({ error: "Upload produksi belum dikonfigurasi" }, { status: 503 });
   }
 
   const contentLength = Number(req.headers.get("content-length") || 0);

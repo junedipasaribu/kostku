@@ -30,8 +30,7 @@ interface KostContextType {
     roomNumber?: string;
     tenantId?: string;
   };
-  loginAs: (role: "ADMIN" | "TENANT", tenantId?: string) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   updateRoomStatus: (roomId: string, status: "AVAILABLE" | "OCCUPIED" | "MAINTENANCE") => void;
   addRoom: (room: Omit<RoomData, "id">) => void;
   updateRoom: (roomId: string, updatedData: Partial<Omit<RoomData, "id">>) => void;
@@ -54,15 +53,14 @@ export function KostProvider({ children }: { children: React.ReactNode }) {
   const [expenses, setExpenses] = useState<ExpenseData[]>(initialExpenses);
   const [complaints, setComplaints] = useState<ComplaintData[]>(initialComplaints);
 
-  // Default login session: ADMIN
   const [currentUser, setCurrentUser] = useState<{
     role: "ADMIN" | "TENANT";
     name: string;
     roomNumber?: string;
     tenantId?: string;
   }>({
-    role: "ADMIN",
-    name: "Junedi Pasaribu (Owner)",
+    role: "TENANT",
+    name: "",
   });
 
   // Load from localStorage if available
@@ -83,35 +81,26 @@ export function KostProvider({ children }: { children: React.ReactNode }) {
       const savedComplaints = localStorage.getItem("kostku_complaints");
       if (savedComplaints) setComplaints(JSON.parse(savedComplaints));
 
-      const savedUser = localStorage.getItem("kostku_user");
-      if (savedUser) setCurrentUser(JSON.parse(savedUser));
     } catch {
       // Ignore fallback
     }
+
+    fetch("/api/auth/session", { cache: "no-store" })
+      .then(async (response) => (response.ok ? response.json() : null))
+      .then((payload) => {
+        if (!payload?.user) return;
+        setCurrentUser({
+          role: payload.user.role === "TENANT" ? "TENANT" : "ADMIN",
+          name: payload.user.name,
+          tenantId: payload.user.tenantId ?? undefined,
+        });
+      })
+      .catch(() => undefined);
   }, []);
 
-  const loginAs = (role: "ADMIN" | "TENANT", tenantId?: string) => {
-    if (role === "ADMIN") {
-      const adminUser = { role: "ADMIN" as const, name: "Junedi Pasaribu (Owner)" };
-      setCurrentUser(adminUser);
-      localStorage.setItem("kostku_user", JSON.stringify(adminUser));
-    } else {
-      const tenant = tenants.find((t) => t.id === (tenantId || "t101")) || tenants[0];
-      const tenantUser = {
-        role: "TENANT" as const,
-        name: tenant.fullName,
-        roomNumber: tenant.roomNumber,
-        tenantId: tenant.id,
-      };
-      setCurrentUser(tenantUser);
-      localStorage.setItem("kostku_user", JSON.stringify(tenantUser));
-    }
-  };
-
-  const logout = () => {
-    const defaultUser = { role: "ADMIN" as const, name: "Junedi Pasaribu (Owner)" };
-    setCurrentUser(defaultUser);
-    localStorage.removeItem("kostku_user");
+  const logout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    setCurrentUser({ role: "TENANT", name: "" });
   };
 
   const updateRoomStatus = (roomId: string, status: "AVAILABLE" | "OCCUPIED" | "MAINTENANCE") => {
@@ -258,7 +247,6 @@ export function KostProvider({ children }: { children: React.ReactNode }) {
         expenses,
         complaints,
         currentUser,
-        loginAs,
         logout,
         updateRoomStatus,
         addRoom,

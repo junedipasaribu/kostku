@@ -2,13 +2,14 @@
 
 Prototype website dan dashboard untuk manajemen rumah kost. Dibuat dengan Next.js, TypeScript, Tailwind CSS, dan PostgreSQL/Prisma.
 
-> **Status:** belum siap untuk data penghuni atau transaksi nyata. Data operasional masih berupa data demo di browser. Portal penyewa dan upload produksi dinonaktifkan.
+> **Status:** admin dapat membuat dan mengelola akun login penghuni. Portal menampilkan profil kamar/sewa yang tersimpan di database; pengelolaan operasional lain masih berupa demo di browser dan tagihan, komplain, serta upload belum aktif untuk produksi.
 
 ## Fitur
 
 - Website informasi dan katalog kamar
 - Dashboard demo untuk kamar, penghuni, tagihan, pengeluaran, dan komplain
-- Login pengelola dengan sesi server
+- Login pengelola dan penghuni dengan sesi server
+- Pembuatan akun penghuni dari data penghuni di dashboard admin, termasuk ubah email/kata sandi dan aktif/nonaktif akun
 
 ## Menjalankan lokal
 

@@ -1,6 +1,14 @@
 # Persiapan Production Kostku
 
-> Kostku belum siap menyimpan data penghuni atau transaksi nyata. Data operasional masih disimpan di browser; portal penyewa dan upload produksi dinonaktifkan. Autentikasi server yang tersedia saat ini hanya untuk pengelola.
+> Admin dapat membuat dan mengelola akun login penghuni. Portal hanya menampilkan profil penghuni dan kamar yang ditautkan ke akun tersebut. Data operasional lain masih disimpan di browser; fitur tagihan, komplain, dan upload belum siap untuk transaksi nyata.
+
+## Akun penghuni
+
+Di dashboard admin, buka **Data Penghuni & Deposit**, lalu pilih **Buat login** pada penghuni. Masukkan email dan kata sandi awal minimal 12 karakter. Dari menu **Kelola akun**, admin dapat mengganti email atau kata sandi serta menonaktifkan atau mengaktifkan akses portal. Menonaktifkan akun atau mengganti kata sandi mengakhiri sesi aktif penghuni.
+
+Pembuatan akun menyimpan tautan profil penghuni, kamar, dan akun di PostgreSQL. Data check-in lain pada dashboard masih berupa data demo browser dan tidak otomatis tersinkron antar perangkat.
+
+Login membatasi 10 kegagalan per alamat IP dalam 15 menit. Penghitung ini berada di memori proses; gunakan pembatas terdistribusi sebelum menjalankan beberapa replika aplikasi.
 
 ## Akun pengelola
 
@@ -26,5 +34,5 @@ Deploy menyelaraskan skema Prisma tanpa opsi `--accept-data-loss`. Tetap buat ba
 ## Sebelum menerima data nyata
 
 - Pindahkan data operasional dari `localStorage` ke database melalui API yang memeriksa identitas dan izin pada setiap permintaan.
-- Bangun ulang portal penyewa dan alur upload menggunakan penyimpanan privat yang tahan lama.
-- Tambahkan pembatasan percobaan login, pemulihan akun, backup yang diuji, pencatatan audit, dan pemantauan.
+- Hubungkan tagihan, komplain, dan alur upload ke database serta penyimpanan privat yang tahan lama.
+- Tambahkan pembatasan percobaan login terdistribusi jika aplikasi dijalankan dengan beberapa replika, pemulihan akun, backup yang diuji, pencatatan audit, dan pemantauan.

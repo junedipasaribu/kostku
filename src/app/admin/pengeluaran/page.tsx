@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useKost } from "@/lib/kost-context";
+import type { ExpenseData } from "@/lib/data";
 import { Plus, X } from "lucide-react";
 
 export default function AdminPengeluaranPage() {
@@ -150,7 +151,7 @@ export default function AdminPengeluaranPage() {
                 <label className="block text-zinc-400 mb-1">Kategori</label>
                 <select
                   value={category}
-                  onChange={(e) => setCategory(e.target.value as any)}
+                  onChange={(e) => setCategory(e.target.value as ExpenseData["category"])}
                   className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs"
                 >
                   <option value="Listrik">Listrik (Token / Induk)</option>

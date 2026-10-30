@@ -17,6 +17,7 @@ import {
   X,
   ExternalLink,
 } from "lucide-react";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export default function AdminLayout({
   children,
@@ -87,12 +88,15 @@ export default function AdminLayout({
             Kostku <span className="text-zinc-400 font-normal text-xs">Admin</span>
           </span>
         </div>
-        <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white"
-        >
-          {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle compact className="px-2.5" />
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white"
+          >
+            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
       </div>
 
       {/* Minimalist Sidebar */}
@@ -158,6 +162,7 @@ export default function AdminLayout({
 
         {/* Footer Profile */}
         <div className="pt-4 border-t border-zinc-800/80 space-y-2">
+          <ThemeToggle className="w-full" />
           <div className="px-3 py-2 rounded-lg bg-zinc-900/40 border border-zinc-800/60 flex items-center justify-between">
             <div className="truncate">
               <p className="text-xs font-medium text-zinc-200 truncate">{user.name}</p>

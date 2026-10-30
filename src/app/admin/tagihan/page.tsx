@@ -5,6 +5,18 @@ import { useKost } from "@/lib/kost-context";
 import { Phone, Search, X, Check, FileText, Printer, Download } from "lucide-react";
 import { InvoiceData } from "@/lib/data";
 
+const htmlEscapes: Record<string, string> = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#39;",
+};
+
+function escapeHtml(value: string) {
+  return value.replace(/[&<>"']/g, (character) => htmlEscapes[character]);
+}
+
 function InvoiceReceiptModal({
   inv,
   building,
@@ -19,7 +31,7 @@ function InvoiceReceiptModal({
     if (!printWindow) return;
     printWindow.document.write(`
       <!DOCTYPE html><html><head>
-      <title>Kwitansi ${inv.invoiceNumber}</title>
+      <title>Kwitansi ${escapeHtml(inv.invoiceNumber)}</title>
       <style>
         body { font-family:'Segoe UI',sans-serif; padding:32px; color:#111; max-width:480px; margin:0 auto; }
         .header { text-align:center; border-bottom:2px solid #111; padding-bottom:12px; margin-bottom:16px; }
@@ -35,29 +47,29 @@ function InvoiceReceiptModal({
         .ttd-line { margin-top:48px; border-top:1px solid #555; padding-top:4px; }
       </style></head><body>
       <div class="header">
-        <h1>${building.name}</h1>
-        <p>${building.address}</p>
+        <h1>${escapeHtml(building.name)}</h1>
+        <p>${escapeHtml(building.address)}</p>
         <p style="margin-top:6px;font-size:13px;font-weight:600;">KWITANSI PEMBAYARAN SEWA</p>
       </div>
       <div style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:11px;color:#555;">${inv.invoiceNumber}</span>
+        <span style="font-size:11px;color:#555;">${escapeHtml(inv.invoiceNumber)}</span>
         <span class="badge">${inv.status==='PAID'?'LUNAS':inv.status==='PENDING_VERIFICATION'?'MENUNGGU VERIFIKASI':'BELUM BAYAR'}</span>
       </div>
-      <div class="row"><span>Nama Penyewa</span><span><b>${inv.tenantName}</b></span></div>
-      <div class="row"><span>No. Kamar</span><span>${inv.roomNumber}</span></div>
-      <div class="row"><span>Periode Sewa</span><span>${inv.periodMonth} ${inv.periodYear}</span></div>
-      <div class="row"><span>Jatuh Tempo</span><span>${inv.dueDate}</span></div>
-      ${inv.paymentMethod ? `<div class="row"><span>Metode Bayar</span><span>${inv.paymentMethod}</span></div>` : ""}
-      ${inv.paidAt ? `<div class="row"><span>Dibayar Pada</span><span>${inv.paidAt}</span></div>` : ""}
+      <div class="row"><span>Nama Penyewa</span><span><b>${escapeHtml(inv.tenantName)}</b></span></div>
+      <div class="row"><span>No. Kamar</span><span>${escapeHtml(inv.roomNumber)}</span></div>
+      <div class="row"><span>Periode Sewa</span><span>${escapeHtml(inv.periodMonth)} ${inv.periodYear}</span></div>
+      <div class="row"><span>Jatuh Tempo</span><span>${escapeHtml(inv.dueDate)}</span></div>
+      ${inv.paymentMethod ? `<div class="row"><span>Metode Bayar</span><span>${escapeHtml(inv.paymentMethod)}</span></div>` : ""}
+      ${inv.paidAt ? `<div class="row"><span>Dibayar Pada</span><span>${escapeHtml(inv.paidAt)}</span></div>` : ""}
       <div class="total"><span>TOTAL TAGIHAN</span><span>Rp ${inv.amount.toLocaleString("id-ID")}</span></div>
       <div style="margin-top:16px;padding:10px;border:1px dashed #ccc;background:#fafafa;border-radius:4px;font-size:11px;">
-        <b>Transfer ke:</b> ${building.bankName} — ${building.bankAccount} a.n. ${building.bankHolder}
+        <b>Transfer ke:</b> ${escapeHtml(building.bankName)} — ${escapeHtml(building.bankAccount)} a.n. ${escapeHtml(building.bankHolder)}
       </div>
       <div class="ttd">
-        <div class="ttd-box"><div>Penyewa</div><div class="ttd-line">${inv.tenantName}</div></div>
-        <div class="ttd-box"><div>Pengelola</div><div class="ttd-line">${building.ownerName}</div></div>
+        <div class="ttd-box"><div>Penyewa</div><div class="ttd-line">${escapeHtml(inv.tenantName)}</div></div>
+        <div class="ttd-box"><div>Pengelola</div><div class="ttd-line">${escapeHtml(building.ownerName)}</div></div>
       </div>
-      <div class="footer">Dokumen digital ${building.name}. Sah tanpa tanda tangan basah.</div>
+      <div class="footer">Dokumen digital ${escapeHtml(building.name)}. Sah tanpa tanda tangan basah.</div>
       </body></html>
     `);
     printWindow.document.close();
@@ -75,8 +87,8 @@ function InvoiceReceiptModal({
         </div>
         <div className="p-5 space-y-1.5 text-xs">
           {[
-            ["No. Invoice", <span className="font-mono text-[11px]">{inv.invoiceNumber}</span>],
-            ["Penyewa", <span className="font-semibold text-white">{inv.tenantName}</span>],
+            ["No. Invoice", <span key="invoice-number" className="font-mono text-[11px]">{inv.invoiceNumber}</span>],
+            ["Penyewa", <span key="tenant-name" className="font-semibold text-white">{inv.tenantName}</span>],
             ["Kamar", inv.roomNumber],
             ["Periode", `${inv.periodMonth} ${inv.periodYear}`],
             ["Jatuh Tempo", inv.dueDate],

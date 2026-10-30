@@ -1,13 +1,39 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useKost } from "@/lib/kost-context";
-import { UserPlus, Phone, Search, X } from "lucide-react";
+import { UserPlus, Phone, Search, X, KeyRound, UserCog } from "lucide-react";
+
+type TenantAccount = {
+  tenantId: string | null;
+  profileId?: string;
+  name: string;
+  phone: string;
+  roomNumber: string;
+  userId: string;
+  email: string;
+  isActive: boolean;
+};
 
 export default function AdminPenghuniPage() {
   const { tenants, rooms, addTenant } = useKost();
   const [searchQuery, setSearchQuery] = useState("");
   const [isCheckinModalOpen, setIsCheckinModalOpen] = useState(false);
+  const [accounts, setAccounts] = useState<TenantAccount[]>([]);
+  const [accountTenant, setAccountTenant] = useState<(typeof tenants)[number] | null>(null);
+  const [accountEmail, setAccountEmail] = useState("");
+  const [accountPassword, setAccountPassword] = useState("");
+  const [accountActive, setAccountActive] = useState(true);
+  const [accountError, setAccountError] = useState("");
+  const [accountSuccess, setAccountSuccess] = useState("");
+  const [isSavingAccount, setIsSavingAccount] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/admin/tenant-users", { cache: "no-store" })
+      .then(async (response) => response.ok ? response.json() : null)
+      .then((payload) => { if (payload?.accounts) setAccounts(payload.accounts); })
+      .catch(() => undefined);
+  }, []);
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("628");
@@ -26,6 +52,100 @@ export default function AdminPenghuniPage() {
   );
 
   const availableRooms = rooms.filter((r) => r.status === "AVAILABLE");
+  const accountByTenant = new Map(accounts.filter((account) => account.tenantId).map((account) => [account.tenantId!, account]));
+
+  const openAccountDialog = (tenant: (typeof tenants)[number]) => {
+    const account = accountByTenant.get(tenant.id);
+    setAccountTenant(tenant);
+    setAccountEmail(account?.email ?? "");
+    setAccountPassword("");
+    setAccountActive(account?.isActive ?? true);
+    setAccountError("");
+    setAccountSuccess("");
+  };
+
+  const openSavedAccount = (account: TenantAccount) => {
+    if (!account.tenantId) return;
+    openAccountDialog({
+      id: account.tenantId,
+      fullName: account.name,
+      roomNumber: account.roomNumber,
+      roomId: "",
+      phone: account.phone,
+      idCardNumber: "",
+      emergencyContactName: "",
+      emergencyContactPhone: "",
+      startDate: new Date().toISOString().split("T")[0],
+      depositAmount: 0,
+      depositStatus: "HELD",
+      status: "ACTIVE",
+    });
+  };
+
+  const closeAccountDialog = () => {
+    setAccountTenant(null);
+    setAccountPassword("");
+  };
+
+  const handleAccountSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!accountTenant) return;
+    const account = accountByTenant.get(accountTenant.id);
+    const room = rooms.find((item) => item.id === accountTenant.roomId);
+    if (!account && !room) {
+      setAccountError("Data kamar tidak ditemukan. Periksa penempatan kamar penghuni.");
+      return;
+    }
+    if (!account && accountPassword.length < 12) {
+      setAccountError("Kata sandi awal minimal 12 karakter.");
+      return;
+    }
+
+    setIsSavingAccount(true);
+    setAccountError("");
+    setAccountSuccess("");
+    try {
+      const response = await fetch("/api/admin/tenant-users", {
+        method: account ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(account ? {
+          tenantId: accountTenant.id,
+          email: accountEmail,
+          password: accountPassword,
+          isActive: accountActive,
+        } : {
+          tenant: accountTenant,
+          room: room && {
+            roomNumber: room.roomNumber,
+            type: room.type,
+            priceMonthly: room.priceMonthly,
+            floor: room.floor,
+            size: room.size,
+            facilities: room.facilities,
+            image: room.image,
+          },
+          email: accountEmail,
+          password: accountPassword,
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        setAccountError(payload.error ?? "Akun belum dapat disimpan.");
+        return;
+      }
+      if (payload.account) {
+        setAccounts((current) => [...current.filter((item) => item.tenantId !== payload.account.tenantId), payload.account]);
+      } else {
+        setAccounts((current) => current.map((item) => item.tenantId === accountTenant.id ? { ...item, email: accountEmail.trim().toLowerCase(), isActive: accountActive } : item));
+      }
+      setAccountSuccess(account ? "Perubahan akun berhasil disimpan." : "Akun login penghuni berhasil dibuat.");
+      setAccountPassword("");
+    } catch {
+      setAccountError("Tidak dapat terhubung ke server. Coba lagi.");
+    } finally {
+      setIsSavingAccount(false);
+    }
+  };
 
   const handleCheckinSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,6 +217,31 @@ export default function AdminPenghuniPage() {
         </div>
       </div>
 
+      <section className="rounded-xl border border-zinc-800/80 bg-zinc-900/30 overflow-hidden">
+        <div className="px-4 py-3 border-b border-zinc-800/80">
+          <h2 className="text-sm font-semibold text-white">Akun portal penghuni</h2>
+          <p className="text-[11px] text-zinc-400 mt-0.5">Kelola akun tersimpan, termasuk akun yang dibuat dari perangkat admin lain.</p>
+        </div>
+        {accounts.length ? (
+          <div className="divide-y divide-zinc-800/60">
+            {accounts.map((account) => (
+              <div key={account.userId} className="px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-zinc-200">{account.name} <span className="text-zinc-500">· Kamar {account.roomNumber}</span></p>
+                  <p className="text-[11px] text-zinc-400 mt-0.5">{account.email}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className={`text-[10px] ${account.isActive ? "text-emerald-400" : "text-rose-400"}`}>{account.isActive ? "Aktif" : "Dinonaktifkan"}</span>
+                  <button type="button" onClick={() => openSavedAccount(account)} className="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs">Kelola</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="px-4 py-4 text-xs text-zinc-500">Belum ada akun penghuni yang dibuat.</p>
+        )}
+      </section>
+
       {/* Table */}
       <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/30 overflow-hidden">
         <div className="overflow-x-auto">
@@ -108,6 +253,7 @@ export default function AdminPenghuniPage() {
                 <th className="p-3.5 font-medium">Deposit</th>
                 <th className="p-3.5 font-medium">NIK KTP</th>
                 <th className="p-3.5 font-medium">Kontak Darurat</th>
+                <th className="p-3.5 font-medium">Akun Portal</th>
                 <th className="p-3.5 font-medium text-right">Aksi</th>
               </tr>
             </thead>
@@ -128,14 +274,38 @@ export default function AdminPenghuniPage() {
                     <div>{t.emergencyContactName || "-"}</div>
                     <div className="text-[10px] font-mono">{t.emergencyContactPhone || "-"}</div>
                   </td>
+                  <td className="p-3.5">
+                    {accountByTenant.has(t.id) ? (
+                      <div className="space-y-1">
+                        <div className="text-[11px] text-zinc-300">{accountByTenant.get(t.id)?.email}</div>
+                        <span className={`text-[10px] ${accountByTenant.get(t.id)?.isActive ? "text-emerald-400" : "text-rose-400"}`}>
+                          {accountByTenant.get(t.id)?.isActive ? "Aktif" : "Dinonaktifkan"}
+                        </span>
+                      </div>
+                    ) : <span className="text-[11px] text-zinc-500">Belum ada akun</span>}
+                  </td>
                   <td className="p-3.5 text-right">
-                    <button
-                      onClick={() => openWhatsApp(t.phone, t.fullName, t.roomNumber)}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs transition-colors"
-                    >
-                      <Phone className="w-3 h-3" />
-                      <span>WA</span>
-                    </button>
+                    <div className="inline-flex items-center gap-2">
+                      {(accountByTenant.has(t.id) || t.status === "ACTIVE") ? (
+                        <button
+                          type="button"
+                          onClick={() => openAccountDialog(t)}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs transition-colors"
+                        >
+                          {accountByTenant.has(t.id) ? <UserCog className="w-3 h-3" /> : <KeyRound className="w-3 h-3" />}
+                          <span>{accountByTenant.has(t.id) ? "Kelola akun" : "Buat login"}</span>
+                        </button>
+                      ) : <span className="text-[10px] text-zinc-500">Penghuni tidak aktif</span>}
+                      <button
+                        type="button"
+                        onClick={() => openWhatsApp(t.phone, t.fullName, t.roomNumber)}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs transition-colors"
+                        aria-label={`WhatsApp ${t.fullName}`}
+                      >
+                        <Phone className="w-3 h-3" />
+                        <span>WA</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -232,6 +402,46 @@ export default function AdminPenghuniPage() {
                   Simpan
                 </button>
               </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {accountTenant && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-xl p-5 shadow-xl">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-800 mb-4">
+              <div>
+                <h3 className="text-sm font-semibold text-white">{accountByTenant.has(accountTenant.id) ? "Kelola akun portal" : "Buat akun portal"}</h3>
+                <p className="text-[11px] text-zinc-400 mt-1">{accountTenant.fullName} · Kamar {accountTenant.roomNumber}</p>
+              </div>
+              <button type="button" onClick={closeAccountDialog} aria-label="Tutup" className="text-zinc-500 hover:text-white"><X className="w-4 h-4" /></button>
+            </div>
+
+            <form onSubmit={handleAccountSubmit} className="space-y-3 text-xs">
+              <div>
+                <label htmlFor="tenant-account-email" className="block text-zinc-400 mb-1">Email login</label>
+                <input id="tenant-account-email" type="email" autoComplete="username" maxLength={254} required value={accountEmail} onChange={(event) => setAccountEmail(event.target.value)} className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white" />
+              </div>
+              <div>
+                <label htmlFor="tenant-account-password" className="block text-zinc-400 mb-1">{accountByTenant.has(accountTenant.id) ? "Kata sandi baru (opsional)" : "Kata sandi awal"}</label>
+                <input id="tenant-account-password" type="password" autoComplete="new-password" minLength={12} maxLength={1024} required={!accountByTenant.has(accountTenant.id)} value={accountPassword} onChange={(event) => setAccountPassword(event.target.value)} placeholder={accountByTenant.has(accountTenant.id) ? "Kosongkan jika tidak diubah" : "Minimal 12 karakter"} className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white placeholder:text-zinc-500" />
+              </div>
+              {accountByTenant.has(accountTenant.id) && (
+                <label className="flex items-center gap-2 rounded-lg bg-zinc-900/50 border border-zinc-800 p-3 text-zinc-300">
+                  <input type="checkbox" checked={accountActive} onChange={(event) => setAccountActive(event.target.checked)} className="accent-emerald-500" />
+                  Akun dapat login ke portal
+                </label>
+              )}
+              {accountError && <p role="alert" className="text-rose-300">{accountError}</p>}
+              {accountSuccess && <p role="status" className="text-emerald-300">{accountSuccess}</p>}
+              <div className="pt-2 flex justify-end gap-2">
+                <button type="button" onClick={closeAccountDialog} className="px-3 py-1.5 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white">Tutup</button>
+                <button type="submit" disabled={isSavingAccount} className="px-3.5 py-1.5 rounded-lg bg-white text-black font-medium disabled:opacity-60">
+                  {isSavingAccount ? "Menyimpan…" : accountByTenant.has(accountTenant.id) ? "Simpan perubahan" : "Buat akun"}
+                </button>
+              </div>
+              {accountByTenant.has(accountTenant.id) && <p className="text-[10px] leading-relaxed text-zinc-500">Menonaktifkan akun atau mengganti kata sandi akan mengeluarkan sesi penghuni yang sedang aktif.</p>}
             </form>
           </div>
         </div>

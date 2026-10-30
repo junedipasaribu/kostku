@@ -57,9 +57,10 @@ export async function getSessionUser(): Promise<AuthUser | null> {
 
   const session = await prisma.session.findUnique({
     where: { tokenHash: digestToken(token) },
-    include: { user: { include: { tenantProfile: { select: { id: true } } } } },
+    include: { user: { include: { tenantProfile: { select: { id: true, status: true } } } } },
   });
-  if (!session || session.expiresAt <= new Date()) return null;
+  if (!session || session.expiresAt <= new Date() || !session.user.isActive) return null;
+  if (session.user.role === "TENANT" && session.user.tenantProfile?.status !== "ACTIVE") return null;
 
   return {
     id: session.user.id,

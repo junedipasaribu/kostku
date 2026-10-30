@@ -120,7 +120,7 @@ jobs:
             docker compose -f docker-compose.prod.yml up -d --force-recreate
             
             # Run Prisma schema push inside container
-            docker compose -f docker-compose.prod.yml exec -T app npx prisma db push
+            docker compose -f docker-compose.prod.yml exec -T app npx --yes prisma@6.19.3 db push
             
             # Clean up old unused docker assets/images to save VPS storage
             docker image prune -f

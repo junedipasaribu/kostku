@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -38,7 +39,8 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#0c0c0e] flex flex-col justify-center items-center px-4 py-12 text-zinc-100 antialiased">
-      <div className="text-center mb-8">
+      <div className="relative text-center mb-8">
+        <ThemeToggle className="absolute right-0 top-0 translate-x-1/2 sm:translate-x-full" />
         <Link href="/" className="inline-flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-white text-black flex items-center justify-center font-bold text-sm">K</div>
           <span className="text-lg font-semibold tracking-tight text-white">Kostku</span>
@@ -48,7 +50,7 @@ export default function LoginPage() {
 
       <div className="w-full max-w-sm bg-zinc-950 border border-zinc-800/80 rounded-2xl p-6 shadow-xl">
         <div className="mb-5 rounded-lg border border-amber-800/70 bg-amber-950/40 px-3 py-2.5 text-[11px] leading-relaxed text-amber-200">
-          Autentikasi pengelola diverifikasi oleh server. Portal penyewa dinonaktifkan sampai data dan hak aksesnya dipindahkan ke server. Data operasional belum siap untuk data nyata.
+          Akun penghuni yang dibuat oleh pengelola dapat masuk ke portal untuk melihat informasi kamar dan sewa.
         </div>
 
         <form onSubmit={handleLogin} className="space-y-3.5 text-xs">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, startTransition } from "react";
 import {
   BuildingInfo,
   RoomData,
@@ -67,19 +67,23 @@ export function KostProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const savedRooms = localStorage.getItem("kostku_rooms");
-      if (savedRooms) setRooms(JSON.parse(savedRooms));
-
       const savedTenants = localStorage.getItem("kostku_tenants");
-      if (savedTenants) setTenants(JSON.parse(savedTenants));
-
       const savedInvoices = localStorage.getItem("kostku_invoices");
-      if (savedInvoices) setInvoices(JSON.parse(savedInvoices));
-
       const savedExpenses = localStorage.getItem("kostku_expenses");
-      if (savedExpenses) setExpenses(JSON.parse(savedExpenses));
-
       const savedComplaints = localStorage.getItem("kostku_complaints");
-      if (savedComplaints) setComplaints(JSON.parse(savedComplaints));
+      const storedRooms = savedRooms ? JSON.parse(savedRooms) : null;
+      const storedTenants = savedTenants ? JSON.parse(savedTenants) : null;
+      const storedInvoices = savedInvoices ? JSON.parse(savedInvoices) : null;
+      const storedExpenses = savedExpenses ? JSON.parse(savedExpenses) : null;
+      const storedComplaints = savedComplaints ? JSON.parse(savedComplaints) : null;
+
+      startTransition(() => {
+        if (storedRooms) setRooms(storedRooms);
+        if (storedTenants) setTenants(storedTenants);
+        if (storedInvoices) setInvoices(storedInvoices);
+        if (storedExpenses) setExpenses(storedExpenses);
+        if (storedComplaints) setComplaints(storedComplaints);
+      });
 
     } catch {
       // Ignore fallback

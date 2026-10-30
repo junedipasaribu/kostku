@@ -43,6 +43,14 @@ const PRESET_IMAGES: Record<string, string> = {
   Standard: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80",
 };
 
+function isRoomType(value: string): value is RoomData["type"] {
+  return value === "Executive" || value === "Deluxe" || value === "Superior" || value === "Standard";
+}
+
+function isRoomStatus(value: string): value is RoomData["status"] {
+  return value === "AVAILABLE" || value === "OCCUPIED" || value === "MAINTENANCE";
+}
+
 export default function AdminKamarPage() {
   const { rooms, updateRoomStatus, addRoom, updateRoom, deleteRoom, addMaintenanceLog } = useKost();
 
@@ -335,10 +343,10 @@ export default function AdminKamarPage() {
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-1 bg-zinc-950/80 p-1 rounded-lg border border-zinc-800/80">
             <span className="text-zinc-500 text-[11px] px-1.5 font-medium">Lt:</span>
-            {["ALL", 1, 2, 3].map((fl) => (
+            {(["ALL", 1, 2, 3] as const).map((fl) => (
               <button
                 key={String(fl)}
-                onClick={() => setFilterFloor(fl as any)}
+                onClick={() => setFilterFloor(fl)}
                 className={`px-2 py-0.5 rounded text-[11px] transition-colors ${
                   filterFloor === fl
                     ? "bg-zinc-800 text-white font-medium"
@@ -603,7 +611,7 @@ export default function AdminKamarPage() {
                   <label className="block text-zinc-400 mb-1 font-medium">Tipe Kamar</label>
                   <select
                     value={type}
-                    onChange={(e) => handleTypeChange(e.target.value as any)}
+                    onChange={(e) => { if (isRoomType(e.target.value)) handleTypeChange(e.target.value); }}
                     className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs"
                   >
                     <option value="Executive">Executive</option>
@@ -768,7 +776,7 @@ export default function AdminKamarPage() {
                   <label className="block text-zinc-400 mb-1 font-medium">Status</label>
                   <select
                     value={status}
-                    onChange={(e) => setStatus(e.target.value as any)}
+                    onChange={(e) => { if (isRoomStatus(e.target.value)) setStatus(e.target.value); }}
                     className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs"
                   >
                     <option value="AVAILABLE">Tersedia (Kosong)</option>
@@ -784,7 +792,7 @@ export default function AdminKamarPage() {
                   <label className="block text-zinc-400 mb-1 font-medium">Tipe Kamar</label>
                   <select
                     value={type}
-                    onChange={(e) => setType(e.target.value as any)}
+                    onChange={(e) => { if (isRoomType(e.target.value)) setType(e.target.value); }}
                     className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs"
                   >
                     <option value="Executive">Executive</option>

@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
 
     await fs.writeFile(filePath, bytes, { flag: "wx", mode: 0o644 });
 
-    const publicUrl = `/uploads/rooms/${fileName}`;
+    const publicUrl = `/api/uploads/rooms/${fileName}`;
 
     return NextResponse.json({
       success: true,

@@ -27,8 +27,8 @@ export default function ImageUploader({
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      setErrorMsg("Ukuran file maksimal 10MB.");
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMsg("Ukuran file maksimal 5MB.");
       return;
     }
 
@@ -63,8 +63,9 @@ export default function ImageUploader({
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.currentTarget;
     const file = e.target.files?.[0];
-    if (file) processFile(file);
+    if (file) void processFile(file).finally(() => { input.value = ""; });
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -117,7 +118,7 @@ export default function ImageUploader({
 
           <div className="p-2.5 bg-zinc-900/90 border-t border-zinc-800/80 flex items-center justify-between text-xs">
             <span className="text-zinc-400 text-[11px] truncate max-w-[240px]">
-              {value.startsWith("/uploads") ? "✓ Tersimpan di server" : "✓ Foto kamar siap"}
+              {value.startsWith("/uploads") || value.startsWith("/api/uploads/rooms/") ? "✓ Tersimpan di server" : "✓ Foto kamar siap"}
             </span>
 
             <button
@@ -159,7 +160,7 @@ export default function ImageUploader({
                   Klik untuk pilih foto langsung dari perangkat
                 </p>
                 <p className="text-[11px] text-zinc-500 mt-0.5">
-                  Atau seret & lepas file gambar ke area ini (JPG, PNG, WEBP max 10MB)
+                  Atau seret & lepas file gambar ke area ini (JPG, PNG, WEBP max 5MB)
                 </p>
               </div>
             </div>

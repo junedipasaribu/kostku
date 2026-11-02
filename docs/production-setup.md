@@ -1,12 +1,12 @@
 # Persiapan Production Kostku
 
-> Admin dapat membuat dan mengelola akun login penghuni. Portal hanya menampilkan profil penghuni dan kamar yang ditautkan ke akun tersebut. Data operasional lain masih disimpan di browser; fitur tagihan, komplain, dan upload belum siap untuk transaksi nyata.
+> Admin dapat membuat dan mengelola akun login penghuni. Profil penghuni, termasuk data identitas dan kontak darurat, disimpan di PostgreSQL dan hanya dimuat melalui API admin. Data operasional lain masih disimpan di browser; fitur tagihan, komplain, dan upload belum siap untuk transaksi nyata.
 
 ## Akun penghuni
 
 Di dashboard admin, buka **Data Penghuni & Deposit**, lalu pilih **Buat login** pada penghuni. Masukkan email dan kata sandi awal minimal 12 karakter. Dari menu **Kelola akun**, admin dapat mengganti email atau kata sandi serta menonaktifkan atau mengaktifkan akses portal. Menonaktifkan akun atau mengganti kata sandi mengakhiri sesi aktif penghuni.
 
-Pembuatan akun menyimpan tautan profil penghuni, kamar, dan akun di PostgreSQL. Data check-in lain pada dashboard masih berupa data demo browser dan tidak otomatis tersinkron antar perangkat.
+Check-in baru dan akun login menyimpan profil penghuni serta tautan kamar di PostgreSQL. Saat admin membuka dashboard, data check-in lama di browser akan diimpor ke database; salinan `kostku_tenants` dihapus dari browser setelah server mengonfirmasi impor. Proses ini memerlukan database dan skema yang aktif. Data operasional selain profil penghuni masih berupa data demo browser dan tidak otomatis tersinkron antar perangkat.
 
 Login membatasi 10 kegagalan per alamat IP dalam 15 menit. Penghitung ini berada di memori proses; gunakan pembatas terdistribusi sebelum menjalankan beberapa replika aplikasi.
 

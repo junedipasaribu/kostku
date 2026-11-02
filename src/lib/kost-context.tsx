@@ -45,6 +45,82 @@ interface KostContextType {
 
 const KostContext = createContext<KostContextType | undefined>(undefined);
 
+function persistRoomCache(rooms: RoomData[]) {
+  try {
+    const safeRooms = rooms.map((room) => {
+      const persistedRoom = { ...room };
+      delete persistedRoom.tenantName;
+      return persistedRoom;
+    });
+    localStorage.setItem("kostku_rooms", JSON.stringify(safeRooms));
+  } catch {
+    // Browser storage is optional; the database remains the source for tenant profiles.
+  }
+}
+
+async function loadTenantRecords(): Promise<{ tenants: TenantData[]; rooms: RoomData[] } | null> {
+  try {
+    const legacyTenantsText = localStorage.getItem("kostku_tenants");
+    if (legacyTenantsText) {
+      const legacyTenants: unknown = JSON.parse(legacyTenantsText);
+      const legacyRooms: unknown = JSON.parse(localStorage.getItem("kostku_rooms") ?? "null") ?? initialRooms;
+      if (Array.isArray(legacyTenants) && legacyTenants.length > 0) {
+        const migration = await fetch("/api/admin/tenants", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tenants: legacyTenants, rooms: legacyRooms }),
+        });
+        if (!migration.ok) return null;
+      }
+      // Remove the legacy browser copy only after the server confirms the import.
+      localStorage.removeItem("kostku_tenants");
+    }
+
+    const response = await fetch("/api/admin/tenants", { cache: "no-store" });
+    if (!response.ok) return null;
+    const payload = await response.json();
+    if (!Array.isArray(payload?.tenants)) return null;
+
+    const cachedRooms: unknown = JSON.parse(localStorage.getItem("kostku_rooms") ?? "null");
+    const resolvedRooms: RoomData[] = Array.isArray(cachedRooms) ? cachedRooms : [...initialRooms];
+    const serverTenantRecords = payload.tenants as Array<TenantData & { room: {
+      type: RoomData["type"];
+      priceMonthly: number;
+      floor: number;
+      size: string | null;
+      status: RoomData["status"];
+      facilities: string[];
+      images: string[];
+    } }>;
+    for (const tenant of serverTenantRecords) {
+      if (resolvedRooms.some((room) => room.roomNumber === tenant.roomNumber)) continue;
+      const serverRoom = tenant.room;
+      resolvedRooms.push({
+        id: tenant.roomId,
+        roomNumber: tenant.roomNumber,
+        type: serverRoom.type,
+        priceMonthly: serverRoom.priceMonthly,
+        floor: serverRoom.floor,
+        size: serverRoom.size ?? "",
+        status: serverRoom.status,
+        facilities: serverRoom.facilities,
+        image: serverRoom.images?.[0] ?? "",
+      });
+    }
+
+    return {
+      rooms: resolvedRooms,
+      tenants: serverTenantRecords.map((tenant) => ({
+        ...tenant,
+        roomId: resolvedRooms.find((room) => room.roomNumber === tenant.roomNumber)?.id ?? tenant.roomId,
+      })),
+    };
+  } catch {
+    // Keep local data if migration or loading fails; it can be retried on the next admin visit.
+    return null;
+  }
+}
+
 export function KostProvider({ children }: { children: React.ReactNode }) {
   const [building] = useState<BuildingInfo>(initialBuildingInfo);
   const [rooms, setRooms] = useState<RoomData[]>(initialRooms);
@@ -98,6 +174,15 @@ export function KostProvider({ children }: { children: React.ReactNode }) {
           name: payload.user.name,
           tenantId: payload.user.tenantId ?? undefined,
         });
+        if (payload.user.role !== "TENANT") {
+          void loadTenantRecords().then((data) => {
+            if (!data) return;
+            setRooms(data.rooms);
+            setTenants(data.tenants);
+            persistRoomCache(data.rooms);
+            localStorage.removeItem("kostku_tenants");
+          });
+        }
       })
       .catch(() => undefined);
   }, []);
@@ -110,9 +195,7 @@ export function KostProvider({ children }: { children: React.ReactNode }) {
   const updateRoomStatus = (roomId: string, status: "AVAILABLE" | "OCCUPIED" | "MAINTENANCE") => {
     setRooms((prev) => {
       const updated = prev.map((r) => (r.id === roomId ? { ...r, status } : r));
-      try {
-        localStorage.setItem("kostku_rooms", JSON.stringify(updated));
-      } catch {}
+      persistRoomCache(updated);
       return updated;
     });
   };
@@ -121,9 +204,7 @@ export function KostProvider({ children }: { children: React.ReactNode }) {
     const id = `r${Date.now().toString().slice(-4)}`;
     setRooms((prev) => {
       const updated = [...prev, { ...newRoom, id }];
-      try {
-        localStorage.setItem("kostku_rooms", JSON.stringify(updated));
-      } catch {}
+      persistRoomCache(updated);
       return updated;
     });
   };
@@ -131,9 +212,7 @@ export function KostProvider({ children }: { children: React.ReactNode }) {
   const updateRoom = (roomId: string, updatedData: Partial<Omit<RoomData, "id">>) => {
     setRooms((prev) => {
       const updated = prev.map((r) => (r.id === roomId ? { ...r, ...updatedData } : r));
-      try {
-        localStorage.setItem("kostku_rooms", JSON.stringify(updated));
-      } catch {}
+      persistRoomCache(updated);
       return updated;
     });
   };
@@ -141,9 +220,7 @@ export function KostProvider({ children }: { children: React.ReactNode }) {
   const deleteRoom = (roomId: string) => {
     setRooms((prev) => {
       const updated = prev.filter((r) => r.id !== roomId);
-      try {
-        localStorage.setItem("kostku_rooms", JSON.stringify(updated));
-      } catch {}
+      persistRoomCache(updated);
       return updated;
     });
   };
@@ -156,32 +233,29 @@ export function KostProvider({ children }: { children: React.ReactNode }) {
           ? { ...r, maintenanceLog: [{ ...log, id }, ...(r.maintenanceLog || [])] }
           : r
       );
-      try {
-        localStorage.setItem("kostku_rooms", JSON.stringify(updated));
-      } catch {}
+      persistRoomCache(updated);
       return updated;
     });
   };
 
-  const addTenant = (newTenant: Omit<TenantData, "id">) => {
-    const id = `t${Date.now().toString().slice(-4)}`;
-    setTenants((prev) => {
-      const updated = [...prev, { ...newTenant, id }];
-      try {
-        localStorage.setItem("kostku_tenants", JSON.stringify(updated));
-      } catch {}
-      return updated;
+  const addTenant = async (newTenant: Omit<TenantData, "id">) => {
+    const room = rooms.find((item) => item.id === newTenant.roomId);
+    if (!room) throw new Error("Data kamar tidak ditemukan");
+    const response = await fetch("/api/admin/tenants", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tenants: [{ ...newTenant, roomNumber: room.roomNumber }],
+        rooms: [room],
+      }),
     });
-    // Auto update room status to OCCUPIED
-    setRooms((prev) => {
-      const updated = prev.map((r) =>
-        r.id === newTenant.roomId ? { ...r, status: "OCCUPIED" as const, tenantName: newTenant.fullName } : r
-      );
-      try {
-        localStorage.setItem("kostku_rooms", JSON.stringify(updated));
-      } catch {}
-      return updated;
-    });
+    if (!response.ok) throw new Error("Data penghuni belum dapat disimpan");
+    const payload = await response.json();
+    const tenantId = payload.legacyIds?.[0];
+    if (typeof tenantId !== "string") throw new Error("Server tidak mengembalikan ID penghuni");
+    const savedTenant = { ...newTenant, id: tenantId, roomNumber: room.roomNumber };
+    setTenants((prev) => [...prev, savedTenant]);
+    setRooms((prev) => prev.map((item) => item.id === room.id ? { ...item, status: "OCCUPIED", tenantName: newTenant.fullName } : item));
   };
 
   const updateInvoiceStatus = (

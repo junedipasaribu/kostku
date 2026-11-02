@@ -43,6 +43,8 @@ export default function AdminPenghuniPage() {
   const [depositAmount, setDepositAmount] = useState(1000000);
   const [emergencyName, setEmergencyName] = useState("");
   const [emergencyPhone, setEmergencyPhone] = useState("628");
+  const [checkinError, setCheckinError] = useState("");
+  const [isSavingTenant, setIsSavingTenant] = useState(false);
 
   const filteredTenants = tenants.filter(
     (t) =>
@@ -147,29 +149,37 @@ export default function AdminPenghuniPage() {
     }
   };
 
-  const handleCheckinSubmit = (e: React.FormEvent) => {
+  const handleCheckinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const selectedRoom = rooms.find((r) => r.id === roomId);
     if (!selectedRoom || !fullName) return;
 
-    addTenant({
-      fullName,
-      phone,
-      idCardNumber,
-      roomId: selectedRoom.id,
-      roomNumber: selectedRoom.roomNumber,
-      startDate,
-      depositAmount: Number(depositAmount),
-      depositStatus: "HELD",
-      emergencyContactName: emergencyName,
-      emergencyContactPhone: emergencyPhone,
-      status: "ACTIVE",
-    });
+    setCheckinError("");
+    setIsSavingTenant(true);
+    try {
+      await addTenant({
+        fullName,
+        phone,
+        idCardNumber,
+        roomId: selectedRoom.id,
+        roomNumber: selectedRoom.roomNumber,
+        startDate,
+        depositAmount: Number(depositAmount),
+        depositStatus: "HELD",
+        emergencyContactName: emergencyName,
+        emergencyContactPhone: emergencyPhone,
+        status: "ACTIVE",
+      });
 
-    setIsCheckinModalOpen(false);
-    setFullName("");
-    setIdCardNumber("");
-    setEmergencyName("");
+      setIsCheckinModalOpen(false);
+      setFullName("");
+      setIdCardNumber("");
+      setEmergencyName("");
+    } catch (error) {
+      setCheckinError(error instanceof Error ? error.message : "Data penghuni belum dapat disimpan.");
+    } finally {
+      setIsSavingTenant(false);
+    }
   };
 
   const openWhatsApp = (phoneNum: string, name: string, roomNo: string) => {
@@ -388,6 +398,7 @@ export default function AdminPenghuniPage() {
               </div>
 
               <div className="pt-3 flex justify-end gap-2">
+                {checkinError && <p role="alert" className="mr-auto self-center text-rose-300">{checkinError}</p>}
                 <button
                   type="button"
                   onClick={() => setIsCheckinModalOpen(false)}
@@ -397,9 +408,10 @@ export default function AdminPenghuniPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-3.5 py-1.5 rounded-lg bg-white text-black font-medium"
+                  disabled={isSavingTenant}
+                  className="px-3.5 py-1.5 rounded-lg bg-white text-black font-medium disabled:opacity-60"
                 >
-                  Simpan
+                  {isSavingTenant ? "Menyimpan…" : "Simpan"}
                 </button>
               </div>
             </form>

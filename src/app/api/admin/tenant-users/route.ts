@@ -72,6 +72,7 @@ export async function POST(request: Request) {
   const password = bodyRecord?.password;
   const fullName = typeof tenant?.fullName === "string" ? tenant.fullName.trim() : "";
   const legacyId = typeof tenant?.id === "string" ? tenant.id.trim() : "";
+  const idCardNumber = typeof tenant?.idCardNumber === "string" ? tenant.idCardNumber.trim().slice(0, 32) : null;
   const roomNumber = typeof room?.roomNumber === "string" ? room.roomNumber.trim() : "";
   const roomType = room?.type;
   const priceMonthly = Number(room?.priceMonthly);
@@ -127,10 +128,10 @@ export async function POST(request: Request) {
       const profile = existingTenant
         ? await tx.tenant.update({
             where: { id: existingTenant.id },
-            data: { userId: user.id, roomId: roomRecord.id, fullName, phone, startDate, depositAmount, emergencyContact, status: "ACTIVE" },
+            data: { userId: user.id, roomId: roomRecord.id, fullName, phone, idCardNumber, startDate, depositAmount, emergencyContact, status: "ACTIVE" },
           })
         : await tx.tenant.create({
-            data: { legacyId, userId: user.id, roomId: roomRecord.id, fullName, phone, startDate, depositAmount, emergencyContact, status: "ACTIVE" },
+            data: { legacyId, userId: user.id, roomId: roomRecord.id, fullName, phone, idCardNumber, startDate, depositAmount, emergencyContact, status: "ACTIVE" },
           });
 
       return { tenantId: legacyId, profileId: profile.id, userId: user.id, email: user.email, isActive: user.isActive, name: fullName, phone, roomNumber };

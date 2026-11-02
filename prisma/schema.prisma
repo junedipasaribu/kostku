@@ -40,15 +40,17 @@ enum DepositStatus {
 
 model BuildingConfig {
   id             String   @id @default("default")
-  name           String   @default("Kostku Residence")
-  address        String   @default("Jl. Kemang Raya No. 45, Jakarta Selatan")
-  ownerName      String   @default("Junedi Pasaribu")
-  ownerPhone     String   @default("6281234567890")
-  bankName       String   @default("BCA")
-  bankAccount    String   @default("8830123456")
-  bankHolder     String   @default("Junedi Pasaribu")
+  name           String
+  tagline        String   @default("")
+  address        String   @default("")
+  ownerName      String   @default("")
+  ownerPhone     String   @default("")
+  bankName       String   @default("")
+  bankAccount    String   @default("")
+  bankHolder     String   @default("")
   qrisUrl        String?
   rules          String[]
+  sharedFacilities String[] @default([])
   updatedAt      DateTime @updatedAt
 }
 
@@ -97,6 +99,20 @@ model Room {
   tenants      Tenant[]
   invoices     Invoice[]
   complaints   Complaint[]
+  maintenanceLogs RoomMaintenanceLog[]
+}
+
+model RoomMaintenanceLog {
+  id          String   @id @default(cuid())
+  roomId      String
+  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  date        DateTime
+  description String
+  cost        Float?
+  technician  String?
+  createdAt   DateTime @default(now())
+
+  @@index([roomId, date])
 }
 
 model Tenant {
@@ -142,6 +158,8 @@ model Invoice {
   notes         String?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+
+  @@unique([tenantId, periodMonth, periodYear])
 }
 
 model Expense {

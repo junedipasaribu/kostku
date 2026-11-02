@@ -184,6 +184,15 @@ export async function POST(request: Request) {
           update: {},
           select: { id: true },
         });
+        if (item.profile.status === "ACTIVE") {
+          const [activeTenantCount, roomStatus] = await Promise.all([
+            tx.tenant.count({ where: { roomId: room.id, status: "ACTIVE" } }),
+            tx.room.findUnique({ where: { id: room.id }, select: { status: true } }),
+          ]);
+          if (activeTenantCount > 0) throw new Error("ROOM_OCCUPIED");
+          if (roomStatus?.status === "MAINTENANCE") throw new Error("ROOM_MAINTENANCE");
+          await tx.room.update({ where: { id: room.id }, data: { status: "OCCUPIED" } });
+        }
         await tx.tenant.create({
           data: { legacyId: item.legacyId, roomId: room.id, ...item.profile },
           select: { id: true },
@@ -194,7 +203,14 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ success: true, count: saved.length, legacyIds: saved });
-  } catch {
+  } catch (error) {
+    // Specific conflicts are surfaced without exposing database error details.
+    if (error instanceof Error && error.message === "ROOM_OCCUPIED") {
+      return NextResponse.json({ error: "Kamar sudah memiliki penghuni aktif" }, { status: 409 });
+    }
+    if (error instanceof Error && error.message === "ROOM_MAINTENANCE") {
+      return NextResponse.json({ error: "Kamar sedang dalam perbaikan" }, { status: 409 });
+    }
     return NextResponse.json({ error: "Data penghuni belum dapat disimpan ke database" }, { status: 500 });
   }
 }

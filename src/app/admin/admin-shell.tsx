@@ -16,6 +16,7 @@ import {
   Menu,
   X,
   ExternalLink,
+  Settings,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
@@ -67,6 +68,11 @@ export default function AdminLayout({
       href: "/admin/komplain",
       icon: AlertCircle,
       badge: openComplaintsCount > 0 ? `${openComplaintsCount}` : undefined,
+    },
+    {
+      label: "Pengaturan Kost",
+      href: "/admin/pengaturan",
+      icon: Settings,
     },
   ];
 

@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import { useKost } from "@/lib/kost-context";
-import { Phone, Search, X, Check, FileText, Printer, Download } from "lucide-react";
-import { InvoiceData } from "@/lib/data";
+import { Phone, Search, X, Check, FileText, Printer, Download, Plus } from "lucide-react";
+import type { InvoiceData } from "@/lib/data";
 
 const htmlEscapes: Record<string, string> = {
   "&": "&amp;",
@@ -124,11 +124,33 @@ function InvoiceReceiptModal({
 }
 
 export default function AdminTagihanPage() {
-  const { invoices, building, updateInvoiceStatus } = useKost();
+  const { invoices, tenants, building, updateInvoiceStatus, addInvoice } = useKost();
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProofUrl, setSelectedProofUrl] = useState<string | null>(null);
   const [printInvoice, setPrintInvoice] = useState<InvoiceData | null>(null);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [selectedTenantId, setSelectedTenantId] = useState("");
+  const [periodMonth, setPeriodMonth] = useState(new Date().getMonth() + 1);
+  const [periodYear, setPeriodYear] = useState(new Date().getFullYear());
+  const [dueDate, setDueDate] = useState(new Date().toISOString().slice(0, 10));
+  const [isCreating, setIsCreating] = useState(false);
+  const [createError, setCreateError] = useState("");
+
+  const createInvoice = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!selectedTenantId) return;
+    setIsCreating(true);
+    setCreateError("");
+    try {
+      await addInvoice(selectedTenantId, periodMonth, periodYear, dueDate);
+      setIsCreateOpen(false);
+    } catch (error) {
+      setCreateError(error instanceof Error ? error.message : "Tagihan belum dapat dibuat.");
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   const exportCSV = () => {
     const headers = ["No. Invoice", "Penyewa", "No. Kamar", "Periode", "Nominal", "Jatuh Tempo", "Status", "Metode Bayar", "Dibayar Pada"];
@@ -180,6 +202,37 @@ export default function AdminTagihanPage() {
 
   return (
     <div className="space-y-6">
+      {isCreateOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <form onSubmit={createInvoice} className="w-full max-w-md space-y-4 rounded-xl border border-zinc-800 bg-zinc-950 p-5">
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+              <h2 className="text-sm font-semibold text-white">Buat tagihan sewa</h2>
+              <button type="button" onClick={() => setIsCreateOpen(false)} aria-label="Tutup" className="text-zinc-500 hover:text-white"><X className="h-4 w-4" /></button>
+            </div>
+            <label className="block space-y-1 text-xs text-zinc-300">Penghuni
+              <select required value={selectedTenantId} onChange={(event) => setSelectedTenantId(event.target.value)} className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-white">
+                <option value="">Pilih penghuni aktif</option>
+                {tenants.filter((tenant) => tenant.status === "ACTIVE").map((tenant) => <option key={tenant.id} value={tenant.id}>{tenant.fullName} · Kamar {tenant.roomNumber}</option>)}
+              </select>
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="space-y-1 text-xs text-zinc-300">Bulan
+                <select value={periodMonth} onChange={(event) => setPeriodMonth(Number(event.target.value))} className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-white">
+                  {Array.from({ length: 12 }, (_, index) => <option key={index + 1} value={index + 1}>{new Date(2020, index, 1).toLocaleDateString("id-ID", { month: "long" })}</option>)}
+                </select>
+              </label>
+              <label className="space-y-1 text-xs text-zinc-300">Tahun<input type="number" min="2020" max="2100" value={periodYear} onChange={(event) => setPeriodYear(Number(event.target.value))} className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-white" /></label>
+            </div>
+            <label className="block space-y-1 text-xs text-zinc-300">Jatuh tempo<input required type="date" value={dueDate} onChange={(event) => setDueDate(event.target.value)} className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-white" /></label>
+            <p className="text-[11px] text-zinc-500">Nominal tagihan diambil dari tarif bulanan kamar penghuni.</p>
+            {createError && <p role="alert" className="text-xs text-rose-300">{createError}</p>}
+            <div className="flex justify-end gap-2">
+              <button type="button" onClick={() => setIsCreateOpen(false)} className="rounded-lg bg-zinc-800 px-3 py-2 text-xs text-zinc-300">Batal</button>
+              <button disabled={isCreating || !selectedTenantId} className="rounded-lg bg-white px-3 py-2 text-xs font-semibold text-black disabled:opacity-50">{isCreating ? "Menyimpan…" : "Buat tagihan"}</button>
+            </div>
+          </form>
+        </div>
+      )}
       {/* Print Modal */}
       {printInvoice && <InvoiceReceiptModal inv={printInvoice} building={building} onClose={() => setPrintInvoice(null)} />}
 
@@ -195,6 +248,9 @@ export default function AdminTagihanPage() {
         </div>
 
         <div className="flex items-center gap-3">
+          <button onClick={() => { setSelectedTenantId(tenants.find((tenant) => tenant.status === "ACTIVE")?.id ?? ""); setIsCreateOpen(true); }} disabled={!tenants.some((tenant) => tenant.status === "ACTIVE")} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white text-black text-xs font-semibold disabled:opacity-50">
+            <Plus className="w-3.5 h-3.5" /> Buat tagihan
+          </button>
           <div className="text-xs text-zinc-400">
             Piutang Tertunda: <span className="text-white font-semibold">Rp {invoices.filter((i) => i.status !== "PAID").reduce((acc, i) => acc + i.amount, 0).toLocaleString("id-ID")}</span>
           </div>

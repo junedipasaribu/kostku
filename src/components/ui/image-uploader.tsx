@@ -53,27 +53,12 @@ export default function ImageUploader({
         }
       }
 
-      // Fallback if API fails: convert to base64 DataURL
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        if (result) onChange(result);
-        setIsUploading(false);
-      };
-      reader.onerror = () => {
-        setErrorMsg("Gagal memproses gambar.");
-        setIsUploading(false);
-      };
-      reader.readAsDataURL(file);
+      const data = await res.json().catch(() => null);
+      setErrorMsg(data?.error ?? "Gagal mengunggah foto. Silakan coba lagi.");
+      setIsUploading(false);
     } catch {
-      // Fallback to base64
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        if (result) onChange(result);
-        setIsUploading(false);
-      };
-      reader.readAsDataURL(file);
+      setErrorMsg("Gagal menghubungi server untuk mengunggah foto.");
+      setIsUploading(false);
     }
   };
 

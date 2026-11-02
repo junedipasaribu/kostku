@@ -11,7 +11,7 @@ export default function AdminPengeluaranPage() {
 
   const [category, setCategory] = useState<"Listrik" | "Air/PDAM" | "WiFi" | "Kebersihan & Sampah" | "Maintenance & Perbaikan">("Listrik");
   const [description, setDescription] = useState("");
-  const [amount, setAmount] = useState(500000);
+  const [amount, setAmount] = useState(0);
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
 
   const totalExpense = expenses.reduce((acc, e) => acc + e.amount, 0);
@@ -31,19 +31,18 @@ export default function AdminPengeluaranPage() {
     "Maintenance & Perbaikan": "bg-orange-600/60",
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!description) return;
 
-    addExpense({
-      category,
-      description,
-      amount: Number(amount),
-      date,
-    });
-
-    setIsAddModalOpen(false);
-    setDescription("");
+    try {
+      await addExpense({ category, description, amount: Number(amount), date });
+      setIsAddModalOpen(false);
+      setDescription("");
+      setAmount(0);
+    } catch {
+      // Keep the form open so the entry can be retried.
+    }
   };
 
   return (

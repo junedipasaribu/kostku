@@ -1,7 +1,6 @@
-import { CalendarDays, Home, Shield } from "lucide-react";
+import { CalendarDays, Home } from "lucide-react";
 import { getSessionUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { initialBuildingInfo } from "@/lib/data";
 
 function getJakartaToday() {
   const parts = new Intl.DateTimeFormat("en-US", {
@@ -49,6 +48,7 @@ export default async function TenantHomePage() {
       })
     : null;
   if (!tenant) return null;
+  const building = await prisma.buildingConfig.findUnique({ where: { id: "default" }, select: { name: true } });
 
   const today = getJakartaToday();
   const dueDate = getNextMonthlyDueDate(tenant.startDate, today);
@@ -61,7 +61,7 @@ export default async function TenantHomePage() {
     <div className="space-y-6">
       <div className="pb-6 border-b border-zinc-800/80">
         <h1 className="text-xl font-semibold text-white tracking-tight">Selamat datang, {tenant.fullName}</h1>
-        <p className="text-xs text-zinc-400 mt-1">Informasi penghuni dan kamar Anda di {initialBuildingInfo.name}.</p>
+        <p className="text-xs text-zinc-400 mt-1">Informasi penghuni dan kamar Anda di {building?.name || "kost"}.</p>
       </div>
       {showRentReminder && dueDate && daysUntilDue !== null && (
         <div role="status" className="flex gap-3 rounded-xl border border-amber-800/50 bg-amber-950/20 p-4 text-xs leading-relaxed text-amber-200">
@@ -87,13 +87,9 @@ export default async function TenantHomePage() {
         </section>
         <section className="p-5 rounded-xl bg-zinc-900/30 border border-zinc-800/80 space-y-3">
           <div className="flex items-center gap-2 text-white font-semibold"><CalendarDays className="w-4 h-4 text-[#c5a880]" /> Data sewa</div>
-          <p className="text-xs text-zinc-400">Mulai tinggal: {tenant.startDate.toLocaleDateString("id-ID", { dateStyle: "long" })}</p>
+          <p className="text-xs text-zinc-400">Mulai tinggal: {tenant.startDate.toLocaleDateString("id-ID", { dateStyle: "long", timeZone: "UTC" })}</p>
           <p className="text-xs text-zinc-400">Deposit: Rp {tenant.depositAmount.toLocaleString("id-ID")} · {tenant.depositStatus === "HELD" ? "Ditahan" : tenant.depositStatus === "REFUNDED" ? "Dikembalikan" : "Dipotong"}</p>
         </section>
-      </div>
-      <div className="flex gap-3 rounded-xl border border-amber-800/50 bg-amber-950/20 p-4 text-xs leading-relaxed text-amber-200">
-        <Shield className="w-4 h-4 shrink-0" />
-        Portal login penghuni sudah aktif. Informasi tagihan dan komplain online belum dihubungkan ke database.
       </div>
     </div>
   );

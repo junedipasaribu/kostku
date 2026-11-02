@@ -36,13 +36,13 @@ export default function AdminPenghuniPage() {
   }, []);
 
   const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState("628");
+  const [phone, setPhone] = useState("");
   const [idCardNumber, setIdCardNumber] = useState("");
   const [roomId, setRoomId] = useState(rooms.find((r) => r.status === "AVAILABLE")?.id || rooms[0]?.id || "");
   const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0]);
-  const [depositAmount, setDepositAmount] = useState(1000000);
+  const [depositAmount, setDepositAmount] = useState(0);
   const [emergencyName, setEmergencyName] = useState("");
-  const [emergencyPhone, setEmergencyPhone] = useState("628");
+  const [emergencyPhone, setEmergencyPhone] = useState("");
   const [checkinError, setCheckinError] = useState("");
   const [isSavingTenant, setIsSavingTenant] = useState(false);
 
@@ -368,11 +368,17 @@ export default function AdminPenghuniPage() {
                     type="text"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
+                    maxLength={40}
                     required
                     className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs"
                   />
                 </div>
               </div>
+
+              <label className="block">
+                <span className="block text-zinc-400 mb-1">NIK (opsional)</span>
+                <input type="text" inputMode="numeric" maxLength={32} value={idCardNumber} onChange={(event) => setIdCardNumber(event.target.value)} className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs" />
+              </label>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -392,9 +398,19 @@ export default function AdminPenghuniPage() {
                     value={depositAmount}
                     onChange={(e) => setDepositAmount(Number(e.target.value))}
                     required
+                    min={0}
                     className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs"
                   />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <label className="block text-zinc-400">Nama kontak darurat
+                  <input type="text" maxLength={100} value={emergencyName} onChange={(event) => setEmergencyName(event.target.value)} className="mt-1 w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs" />
+                </label>
+                <label className="block text-zinc-400">Telepon kontak darurat
+                  <input type="text" maxLength={40} value={emergencyPhone} onChange={(event) => setEmergencyPhone(event.target.value)} className="mt-1 w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs" />
+                </label>
               </div>
 
               <div className="pt-3 flex justify-end gap-2">

@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Kostku Residence - Sistem Operasional & Hunian Kost Eksklusif",
-  description: "Website dan portal manajemen 1 gedung kosan modern: status kamar, data penyewa, deposit, pembayaran tagihan, dan laporan fasilitas.",
+  title: "Kostku | Manajemen Hunian",
+  description: "Sistem manajemen hunian kost untuk pengelola dan penghuni.",
 };
 
 export default function RootLayout({

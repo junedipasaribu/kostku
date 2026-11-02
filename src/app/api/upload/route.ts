@@ -34,11 +34,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Tidak memiliki akses" }, { status: 401 });
   }
 
-  // Production uploads remain off until private durable object storage and database-backed records are configured.
-  if (process.env.NODE_ENV === "production") {
-    return NextResponse.json({ error: "Upload produksi belum dikonfigurasi" }, { status: 503 });
-  }
-
   const contentLength = Number(req.headers.get("content-length") || 0);
   if (contentLength > MAX_REQUEST_BYTES) {
     return NextResponse.json({ error: "Ukuran unggahan maksimal 5MB" }, { status: 413 });

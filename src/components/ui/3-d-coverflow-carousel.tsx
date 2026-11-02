@@ -22,53 +22,7 @@ export interface CoverFlowCarouselProps {
   onCtaClick?: (item: CarouselItem) => void;
 }
 
-export const defaultRooms: CarouselItem[] = [
-  {
-    tag: "#Exclusive",
-    titleLine1: "SUITE EXECUTIVE",
-    titleLine2: "– TIPE PREMIUM",
-    desc: "Kamar tidur luas dengan springbed queen, Smart TV, AC inverter, dan kamar mandi dalam water heater",
-    img: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=1200&q=80",
-    ctaText: "Lihat Detail",
-    ctaUrl: "#kamar-executive",
-  },
-  {
-    tag: "#Favorit",
-    titleLine1: "DELUXE COZY",
-    titleLine2: "– TIPE A",
-    desc: "Pilihan terbaik untuk mahasiswa & pekerja. Meja kerja ergonomis, WiFi 100 Mbps, dan balkon pribadi",
-    img: "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=1200&q=80",
-    ctaText: "Lihat Detail",
-    ctaUrl: "#kamar-deluxe",
-  },
-  {
-    tag: "#BestValue",
-    titleLine1: "SUPERIOR COMFORT",
-    titleLine2: "– TIPE B",
-    desc: "Suasana tenang, ventilasi udara maksimal, lemari pakaian 2 pintu, dan rak buku terintegrasi",
-    img: "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=1200&q=80",
-    ctaText: "Lihat Detail",
-    ctaUrl: "#kamar-superior",
-  },
-  {
-    tag: "#Hemat",
-    titleLine1: "STANDARD COMPACT",
-    titleLine2: "– TIPE C",
-    desc: "Kamar minimalis modern yang efisien, AC dingin, kasur single tebal, dan akses dapur bersama",
-    img: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
-    ctaText: "Lihat Detail",
-    ctaUrl: "#kamar-standard",
-  },
-  {
-    tag: "#VIP",
-    titleLine1: "STUDIO LOFT",
-    titleLine2: "– LUXURY LIVING",
-    desc: "Konsep studio modern dengan pantry mini pribadi, kulkas, sofa santai, dan view pemandangan kota",
-    img: "https://images.unsplash.com/photo-1540518614846-7ede433c4550?auto=format&fit=crop&w=1200&q=80",
-    ctaText: "Lihat Detail",
-    ctaUrl: "#kamar-studio",
-  },
-];
+export const defaultRooms: CarouselItem[] = [];
 
 export function CoverFlowCarousel({
   items = defaultRooms,

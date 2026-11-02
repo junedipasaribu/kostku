@@ -4,12 +4,11 @@ import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { AlertCircle, Home, LogOut, Menu, Phone, Receipt, X } from "lucide-react";
-import { initialBuildingInfo } from "@/lib/data";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 type TenantInfo = { name: string; phone: string; roomNumber: string; roomType: string };
 
-export default function TenantShell({ children, tenant }: { children: ReactNode; tenant: TenantInfo }) {
+export default function TenantShell({ children, tenant, building }: { children: ReactNode; tenant: TenantInfo; building: { name: string; ownerPhone: string } }) {
   const pathname = usePathname();
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -58,7 +57,7 @@ export default function TenantShell({ children, tenant }: { children: ReactNode;
         </div>
         <div className="pt-4 border-t border-zinc-800/80 space-y-2">
           <ThemeToggle className="w-full" />
-          <a href={`https://wa.me/${initialBuildingInfo.ownerPhone}`} target="_blank" rel="noreferrer" className="w-full py-1.5 px-3 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 text-xs font-medium flex items-center justify-center gap-1.5">
+          <a href={building.ownerPhone ? `https://wa.me/${building.ownerPhone}` : undefined} target="_blank" rel="noreferrer" aria-disabled={!building.ownerPhone} className="w-full py-1.5 px-3 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 text-xs font-medium flex items-center justify-center gap-1.5">
             <Phone className="w-3.5 h-3.5" /><span>WhatsApp Pengelola</span>
           </a>
           <div className="px-3 py-2 rounded-lg bg-zinc-900/40 border border-zinc-800/60 flex items-center justify-between">

@@ -1,14 +1,12 @@
 # Persiapan Production Kostku
 
-> Admin dapat membuat dan mengelola akun login penghuni. Profil penghuni, termasuk data identitas dan kontak darurat, disimpan di PostgreSQL dan hanya dimuat melalui API admin. Data operasional lain masih disimpan di browser; fitur tagihan, komplain, dan upload belum siap untuk transaksi nyata.
+## Data aplikasi
 
-## Akun penghuni
+Data kamar, sewa/penghuni, tagihan, pengeluaran, komplain, catatan perawatan, dan konfigurasi gedung disimpan di PostgreSQL. Aplikasi tidak lagi mengisi dashboard dengan data penghuni atau transaksi demo. Lengkapi profil kost melalui **Pengaturan Kost**, lalu masukkan kamar dan data sewa melalui dashboard admin.
 
-Di dashboard admin, buka **Data Penghuni & Deposit**, lalu pilih **Buat login** pada penghuni. Masukkan email dan kata sandi awal minimal 12 karakter. Dari menu **Kelola akun**, admin dapat mengganti email atau kata sandi serta menonaktifkan atau mengaktifkan akses portal. Menonaktifkan akun atau mengganti kata sandi mengakhiri sesi aktif penghuni.
+Pada login admin pertama setelah versi ini dipasang, data penghuni lama yang masih tersimpan di `localStorage` dengan key `kostku_tenants` akan dikirim ke API admin dan dihapus dari browser hanya setelah server mengonfirmasi impor. Data kamar, tagihan, pengeluaran, dan komplain lama tidak diimpor otomatis; periksa dan salin data yang benar sebelum menghapus data browser lama. Tiap browser/perangkat menyimpan `localStorage` terpisah.
 
-Check-in baru dan akun login menyimpan profil penghuni serta tautan kamar di PostgreSQL. Saat admin membuka dashboard, data check-in lama di browser akan diimpor ke database; salinan `kostku_tenants` dihapus dari browser setelah server mengonfirmasi impor. Proses ini memerlukan database dan skema yang aktif. Data operasional selain profil penghuni masih berupa data demo browser dan tidak otomatis tersinkron antar perangkat.
-
-Login membatasi 10 kegagalan per alamat IP dalam 15 menit. Penghitung ini berada di memori proses; gunakan pembatas terdistribusi sebelum menjalankan beberapa replika aplikasi.
+Portal penghuni hanya mengambil tagihan dan komplain milik akun yang sedang login. Data gedung dan kamar yang tersedia di halaman publik berasal dari konfigurasi dan database.
 
 ## Akun pengelola
 
@@ -29,10 +27,11 @@ Kata sandi minimal 12 karakter. Jangan commit `.env` atau masukkan secret ke riw
 
 Workflow [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml) membutuhkan GitHub Secrets: `TAILSCALE_AUTHKEY`, `SSH_HOST`, `SSH_USER`, `SSH_KEY`, `SSH_PORT`, dan `DB_PASSWORD`. Gunakan konfigurasi reverse proxy di [`nginx/kostku.conf`](../nginx/kostku.conf) atau [`apache/kostku.conf`](../apache/kostku.conf), lalu aktifkan HTTPS.
 
-Deploy menyelaraskan skema Prisma tanpa opsi `--accept-data-loss`. Tetap buat backup database sebelum perubahan skema.
+Deploy menyelaraskan skema Prisma tanpa opsi `--accept-data-loss`. Backup database sebelum perubahan skema. Compose produksi menggunakan named volume `kostku_postgres_data_prod` untuk database dan `kostku_room_uploads_prod` untuk foto kamar; jangan hapus volume saat memperbarui container. Pastikan backup mencakup keduanya.
 
-## Sebelum menerima data nyata
+## Pengamanan operasional
 
-- Pindahkan data operasional dari `localStorage` ke database melalui API yang memeriksa identitas dan izin pada setiap permintaan.
-- Hubungkan tagihan, komplain, dan alur upload ke database serta penyimpanan privat yang tahan lama.
-- Tambahkan pembatasan percobaan login terdistribusi jika aplikasi dijalankan dengan beberapa replika, pemulihan akun, backup yang diuji, pencatatan audit, dan pemantauan.
+- Login membatasi 10 kegagalan per alamat IP dalam 15 menit. Penghitung saat ini berada di memori proses; gunakan pembatas terdistribusi jika menjalankan beberapa replika.
+- Gunakan HTTPS, rahasia deployment yang kuat, dan batasi akses server/database. Jangan membagikan password admin melalui chat atau log.
+- Uji pemulihan backup PostgreSQL dan volume foto, serta pantau kapasitas disk dan kesehatan container.
+- Pembayaran di aplikasi saat ini dicatat admin sebagai status tagihan; aplikasi belum memproses pembayaran otomatis.

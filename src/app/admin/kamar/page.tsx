@@ -36,13 +36,6 @@ const PRESET_FACILITIES = [
   "Listrik Token Mandiri",
 ];
 
-const PRESET_IMAGES: Record<string, string> = {
-  Executive: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80",
-  Deluxe: "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=800&q=80",
-  Superior: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=800&q=80",
-  Standard: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80",
-};
-
 function isRoomType(value: string): value is RoomData["type"] {
   return value === "Executive" || value === "Deluxe" || value === "Superior" || value === "Standard";
 }
@@ -73,18 +66,13 @@ export default function AdminKamarPage() {
 
   // Form States (Used for both Add & Edit)
   const [roomNumber, setRoomNumber] = useState("");
-  const [type, setType] = useState<"Executive" | "Deluxe" | "Superior" | "Standard">("Deluxe");
+  const [type, setType] = useState<"Executive" | "Deluxe" | "Superior" | "Standard">("Standard");
   const [floor, setFloor] = useState(1);
-  const [priceMonthly, setPriceMonthly] = useState(1950000);
-  const [size, setSize] = useState("3.5 x 4 m");
-  const [selectedFacilities, setSelectedFacilities] = useState<string[]>([
-    "AC Inverter",
-    "Kamar Mandi Dalam",
-    "Water Heater",
-    "WiFi 100 Mbps",
-  ]);
+  const [priceMonthly, setPriceMonthly] = useState(0);
+  const [size, setSize] = useState("");
+  const [selectedFacilities, setSelectedFacilities] = useState<string[]>([]);
   const [customFacility, setCustomFacility] = useState("");
-  const [imageUrl, setImageUrl] = useState(PRESET_IMAGES.Deluxe);
+  const [imageUrl, setImageUrl] = useState("");
   const [status, setStatus] = useState<"AVAILABLE" | "OCCUPIED" | "MAINTENANCE">("AVAILABLE");
 
   // Quick stats
@@ -115,12 +103,12 @@ export default function AdminKamarPage() {
 
   const openAddModal = () => {
     setRoomNumber("");
-    setType("Deluxe");
+    setType("Standard");
     setFloor(1);
-    setPriceMonthly(1950000);
-    setSize("3.5 x 4 m");
-    setSelectedFacilities(["AC Inverter", "Kamar Mandi Dalam", "Water Heater", "WiFi 100 Mbps"]);
-    setImageUrl(PRESET_IMAGES.Deluxe);
+    setPriceMonthly(0);
+    setSize("");
+    setSelectedFacilities([]);
+    setImageUrl("");
     setStatus("AVAILABLE");
     setIsAddModalOpen(true);
   };
@@ -139,13 +127,6 @@ export default function AdminKamarPage() {
 
   const handleTypeChange = (newType: "Executive" | "Deluxe" | "Superior" | "Standard") => {
     setType(newType);
-    if (!editingRoom) {
-      setImageUrl(PRESET_IMAGES[newType] || PRESET_IMAGES.Deluxe);
-      if (newType === "Executive") setPriceMonthly(2500000);
-      else if (newType === "Deluxe") setPriceMonthly(1950000);
-      else if (newType === "Superior") setPriceMonthly(1650000);
-      else setPriceMonthly(1350000);
-    }
   };
 
   const toggleFacility = (facility: string) => {
@@ -162,7 +143,7 @@ export default function AdminKamarPage() {
     setCustomFacility("");
   };
 
-  const handleAddSubmit = (e: React.FormEvent) => {
+  const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!roomNumber.trim()) return;
 
@@ -172,22 +153,25 @@ export default function AdminKamarPage() {
       return;
     }
 
-    addRoom({
-      roomNumber: roomNumber.trim(),
-      type,
-      floor: Number(floor),
-      priceMonthly: Number(priceMonthly),
-      size: size.trim() || "3 x 4 m",
-      status,
-      facilities: selectedFacilities,
-      image: imageUrl.trim() || PRESET_IMAGES[type] || PRESET_IMAGES.Deluxe,
-    });
-
-    setIsAddModalOpen(false);
-    showNotification(`Kamar ${roomNumber} berhasil ditambahkan ke sistem!`);
+    try {
+      await addRoom({
+        roomNumber: roomNumber.trim(),
+        type,
+        floor: Number(floor),
+        priceMonthly: Number(priceMonthly),
+        size: size.trim(),
+        status,
+        facilities: selectedFacilities,
+        image: imageUrl.trim(),
+      });
+      setIsAddModalOpen(false);
+      showNotification(`Kamar ${roomNumber} berhasil ditambahkan ke sistem!`);
+    } catch {
+      // API already showed the save error; keep the form open so the user can retry.
+    }
   };
 
-  const handleEditSubmit = (e: React.FormEvent) => {
+  const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingRoom) return;
 
@@ -203,42 +187,53 @@ export default function AdminKamarPage() {
       return;
     }
 
-    updateRoom(editingRoom.id, {
-      roomNumber: roomNumber.trim(),
-      type,
-      floor: Number(floor),
-      priceMonthly: Number(priceMonthly),
-      size: size.trim() || "3 x 4 m",
-      status,
-      facilities: selectedFacilities,
-      image: imageUrl.trim() || editingRoom.image,
-    });
-
-    setEditingRoom(null);
-    showNotification(`Informasi Kamar ${roomNumber} berhasil diperbarui!`);
+    try {
+      await updateRoom(editingRoom.id, {
+        roomNumber: roomNumber.trim(),
+        type,
+        floor: Number(floor),
+        priceMonthly: Number(priceMonthly),
+        size: size.trim(),
+        status,
+        facilities: selectedFacilities,
+        image: imageUrl.trim(),
+      });
+      setEditingRoom(null);
+      showNotification(`Informasi Kamar ${roomNumber} berhasil diperbarui!`);
+    } catch {
+      // Keep the dialog open so the user can correct the data and retry.
+    }
   };
 
-  const handleDeleteRoom = (room: RoomData) => {
+  const handleDeleteRoom = async (room: RoomData) => {
     if (room.status === "OCCUPIED") {
       alert(`Kamar ${room.roomNumber} saat ini masih terisi oleh penghuni (${room.tenantName}). Pindahkan atau selesaikan masa sewa terlebih dahulu.`);
       return;
     }
 
     if (confirm(`Apakah Anda yakin ingin menghapus Kamar ${room.roomNumber}? Tindakan ini tidak dapat dibatalkan.`)) {
-      deleteRoom(room.id);
-      showNotification(`Kamar ${room.roomNumber} telah dihapus.`);
+      try {
+        await deleteRoom(room.id);
+        showNotification(`Kamar ${room.roomNumber} telah dihapus.`);
+      } catch {
+        // API already showed the save error.
+      }
     }
   };
 
-  const handleAddMaintenanceLog = (e: React.FormEvent) => {
+  const handleAddMaintenanceLog = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!maintenanceRoomId || !mlogDesc.trim()) return;
-    addMaintenanceLog(maintenanceRoomId, {
-      date: mlogDate,
-      description: mlogDesc.trim(),
-      cost: mlogCost !== "" ? Number(mlogCost) : undefined,
-      technician: mlogTech.trim() || undefined,
-    });
+    try {
+      await addMaintenanceLog(maintenanceRoomId, {
+        date: mlogDate,
+        description: mlogDesc.trim(),
+        cost: mlogCost !== "" ? Number(mlogCost) : undefined,
+        technician: mlogTech.trim() || undefined,
+      });
+    } catch {
+      return;
+    }
     const room = rooms.find((r) => r.id === maintenanceRoomId);
     setMaintenanceRoomId(null);
     setMlogDesc("");
@@ -626,7 +621,7 @@ export default function AdminKamarPage() {
                     type="text"
                     value={size}
                     onChange={(e) => setSize(e.target.value)}
-                    placeholder="3.5 x 4 m"
+                    placeholder="Ukuran kamar"
                     className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs focus:outline-none focus:border-zinc-500"
                   />
                 </div>
@@ -640,8 +635,8 @@ export default function AdminKamarPage() {
                   value={priceMonthly}
                   onChange={(e) => setPriceMonthly(Number(e.target.value))}
                   required
-                  min={100000}
-                  step={50000}
+                  min={1}
+                  step={1000}
                   className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs focus:outline-none focus:border-zinc-500 font-mono"
                 />
               </div>
@@ -654,7 +649,6 @@ export default function AdminKamarPage() {
                 <ImageUploader
                   value={imageUrl}
                   onChange={(url) => setImageUrl(url)}
-                  presetFallback={PRESET_IMAGES[type]}
                 />
               </div>
 
@@ -807,7 +801,7 @@ export default function AdminKamarPage() {
                     type="text"
                     value={size}
                     onChange={(e) => setSize(e.target.value)}
-                    placeholder="3.5 x 4 m"
+                    placeholder="Ukuran kamar"
                     className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs focus:outline-none focus:border-zinc-500"
                   />
                 </div>
@@ -821,8 +815,8 @@ export default function AdminKamarPage() {
                   value={priceMonthly}
                   onChange={(e) => setPriceMonthly(Number(e.target.value))}
                   required
-                  min={100000}
-                  step={50000}
+                  min={1}
+                  step={1000}
                   className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs focus:outline-none focus:border-zinc-500 font-mono"
                 />
               </div>

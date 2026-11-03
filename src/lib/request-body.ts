@@ -1,5 +1,13 @@
 import "server-only";
 
+export type JsonRecord = Record<string, unknown>;
+
+export function asJsonRecord(value: unknown): JsonRecord | null {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? value as JsonRecord
+    : null;
+}
+
 export async function readJsonRequest(request: Request, maxBytes: number): Promise<unknown> {
   const reader = request.body?.getReader();
   if (!reader) throw new SyntaxError("Missing request body");

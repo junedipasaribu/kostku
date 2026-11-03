@@ -2,19 +2,12 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { getSessionUser, isSameOrigin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { readJsonRequest } from "@/lib/request-body";
+import { asJsonRecord, readJsonRequest, type JsonRecord } from "@/lib/request-body";
 
 export const runtime = "nodejs";
 
-type RecordValue = Record<string, unknown>;
 const roomTypes = ["Executive", "Deluxe", "Superior", "Standard"];
 const depositStatuses = ["HELD", "REFUNDED", "DEDUCTED"];
-
-function asRecord(value: unknown): RecordValue | null {
-  return typeof value === "object" && value !== null && !Array.isArray(value)
-    ? value as RecordValue
-    : null;
-}
 
 function errorResponse(status = 403) {
   return NextResponse.json({ error: "Akses admin diperlukan" }, { status });
@@ -86,21 +79,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Data tidak valid atau terlalu besar" }, { status: 400 });
   }
 
-  const input = asRecord(body);
+  const input = asJsonRecord(body);
   const tenants = input?.tenants;
   const rooms = input?.rooms;
   if (!Array.isArray(tenants) || tenants.length < 1 || tenants.length > 500 || !Array.isArray(rooms) || rooms.length > 200) {
     return NextResponse.json({ error: "Data penghuni tidak valid" }, { status: 400 });
   }
 
-  const roomByNumber = new Map<string, RecordValue>();
+  const roomByNumber = new Map<string, JsonRecord>();
   for (const value of rooms) {
-    const room = asRecord(value);
+    const room = asJsonRecord(value);
     if (room && typeof room.roomNumber === "string") roomByNumber.set(room.roomNumber.trim(), room);
   }
 
   const parsed = tenants.map((value) => {
-    const tenant = asRecord(value);
+    const tenant = asJsonRecord(value);
     const fullName = typeof tenant?.fullName === "string" ? tenant.fullName.trim() : "";
     const phone = typeof tenant?.phone === "string" ? tenant.phone.trim() : "";
     const roomNumber = typeof tenant?.roomNumber === "string" ? tenant.roomNumber.trim() : "";

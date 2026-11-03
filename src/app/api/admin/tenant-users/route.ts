@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionUser, hashPassword, isSameOrigin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { readJsonRequest } from "@/lib/request-body";
+import { asJsonRecord, readJsonRequest } from "@/lib/request-body";
 
 export const runtime = "nodejs";
 
@@ -11,14 +11,6 @@ function unauthorized() {
 
 function validEmail(email: string) {
   return email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-type JsonRecord = Record<string, unknown>;
-
-function asRecord(value: unknown): JsonRecord | null {
-  return typeof value === "object" && value !== null && !Array.isArray(value)
-    ? value as JsonRecord
-    : null;
 }
 
 export async function GET() {
@@ -65,9 +57,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Data tidak valid atau terlalu besar" }, { status: 400 });
   }
 
-  const bodyRecord = asRecord(body);
-  const tenant = asRecord(bodyRecord?.tenant);
-  const room = asRecord(bodyRecord?.room);
+  const bodyRecord = asJsonRecord(body);
+  const tenant = asJsonRecord(bodyRecord?.tenant);
+  const room = asJsonRecord(bodyRecord?.room);
   const email = typeof bodyRecord?.email === "string" ? bodyRecord.email.trim().toLowerCase() : "";
   const password = bodyRecord?.password;
   const fullName = typeof tenant?.fullName === "string" ? tenant.fullName.trim() : "";
@@ -160,7 +152,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Data tidak valid atau terlalu besar" }, { status: 400 });
   }
 
-  const bodyRecord = asRecord(body);
+  const bodyRecord = asJsonRecord(body);
   const tenantId = typeof bodyRecord?.tenantId === "string" ? bodyRecord.tenantId : "";
   const email = typeof bodyRecord?.email === "string" ? bodyRecord.email.trim().toLowerCase() : "";
   const password = bodyRecord?.password;

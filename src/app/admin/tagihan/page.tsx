@@ -79,8 +79,8 @@ function InvoiceReceiptModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
-      <div className="w-full max-w-sm bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+    <div className="kost-modal-backdrop fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4" onClick={onClose}>
+      <div className="kost-modal-card w-full max-w-sm overflow-hidden rounded-2xl border shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="p-5 border-b border-zinc-800/60 text-center">
           <p className="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">Kwitansi Resmi</p>
           <h2 className="text-sm font-bold text-white">{building.name}</h2>
@@ -203,8 +203,8 @@ export default function AdminTagihanPage() {
   return (
     <div className="space-y-6">
       {isCreateOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <form onSubmit={createInvoice} className="w-full max-w-md space-y-4 rounded-xl border border-zinc-800 bg-zinc-950 p-5">
+        <div className="kost-modal-backdrop fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4">
+          <form onSubmit={createInvoice} className="kost-modal-card w-full max-w-md space-y-4 overflow-y-auto rounded-2xl border p-5">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
               <h2 className="text-sm font-semibold text-white">Buat tagihan sewa</h2>
               <button type="button" onClick={() => setIsCreateOpen(false)} aria-label="Tutup" className="text-zinc-500 hover:text-white"><X className="h-4 w-4" /></button>
@@ -393,8 +393,8 @@ export default function AdminTagihanPage() {
 
       {/* Modal Preview Bukti */}
       {selectedProofUrl && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-xl p-5 shadow-xl">
+        <div className="kost-modal-backdrop fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4">
+          <div className="kost-modal-card w-full max-w-md overflow-y-auto rounded-2xl border p-5 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800 mb-4">
               <h3 className="text-sm font-semibold text-white">Bukti Transfer</h3>
               <button onClick={() => setSelectedProofUrl(null)} className="text-zinc-500 hover:text-white">

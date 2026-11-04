@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useKost } from "@/lib/kost-context";
 import { RoomData } from "@/lib/data";
 import ImageUploader from "@/components/ui/image-uploader";
+import { formatRupiahInput, parseRupiahInput } from "@/lib/rupiah";
 import {
   Plus,
   X,
@@ -61,14 +62,14 @@ export default function AdminKamarPage() {
   // Maintenance Log Form State
   const [mlogDesc, setMlogDesc] = useState("");
   const [mlogDate, setMlogDate] = useState(new Date().toISOString().split("T")[0]);
-  const [mlogCost, setMlogCost] = useState<number | "">("");
+  const [mlogCost, setMlogCost] = useState("");
   const [mlogTech, setMlogTech] = useState("");
 
   // Form States (Used for both Add & Edit)
   const [roomNumber, setRoomNumber] = useState("");
   const [type, setType] = useState<"Executive" | "Deluxe" | "Superior" | "Standard">("Standard");
   const [floor, setFloor] = useState(1);
-  const [priceMonthly, setPriceMonthly] = useState(0);
+  const [priceMonthly, setPriceMonthly] = useState("");
   const [size, setSize] = useState("");
   const [selectedFacilities, setSelectedFacilities] = useState<string[]>([]);
   const [customFacility, setCustomFacility] = useState("");
@@ -105,7 +106,7 @@ export default function AdminKamarPage() {
     setRoomNumber("");
     setType("Standard");
     setFloor(1);
-    setPriceMonthly(0);
+    setPriceMonthly("");
     setSize("");
     setSelectedFacilities([]);
     setImageUrl("");
@@ -118,7 +119,7 @@ export default function AdminKamarPage() {
     setRoomNumber(room.roomNumber);
     setType(room.type);
     setFloor(room.floor);
-    setPriceMonthly(room.priceMonthly);
+    setPriceMonthly(formatRupiahInput(room.priceMonthly));
     setSize(room.size);
     setSelectedFacilities([...room.facilities]);
     setImageUrl(room.image);
@@ -146,6 +147,10 @@ export default function AdminKamarPage() {
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!roomNumber.trim()) return;
+    if (parseRupiahInput(priceMonthly) < 1) {
+      alert("Tarif sewa bulanan harus lebih dari Rp 0.");
+      return;
+    }
 
     // Check duplicate roomNumber
     if (rooms.some((r) => r.roomNumber.toLowerCase() === roomNumber.trim().toLowerCase())) {
@@ -158,7 +163,7 @@ export default function AdminKamarPage() {
         roomNumber: roomNumber.trim(),
         type,
         floor: Number(floor),
-        priceMonthly: Number(priceMonthly),
+        priceMonthly: parseRupiahInput(priceMonthly),
         size: size.trim(),
         status,
         facilities: selectedFacilities,
@@ -174,6 +179,10 @@ export default function AdminKamarPage() {
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingRoom) return;
+    if (parseRupiahInput(priceMonthly) < 1) {
+      alert("Tarif sewa bulanan harus lebih dari Rp 0.");
+      return;
+    }
 
     // Check duplicate roomNumber excluding self
     if (
@@ -192,7 +201,7 @@ export default function AdminKamarPage() {
         roomNumber: roomNumber.trim(),
         type,
         floor: Number(floor),
-        priceMonthly: Number(priceMonthly),
+        priceMonthly: parseRupiahInput(priceMonthly),
         size: size.trim(),
         status,
         facilities: selectedFacilities,
@@ -228,7 +237,7 @@ export default function AdminKamarPage() {
       await addMaintenanceLog(maintenanceRoomId, {
         date: mlogDate,
         description: mlogDesc.trim(),
-        cost: mlogCost !== "" ? Number(mlogCost) : undefined,
+        cost: mlogCost !== "" ? parseRupiahInput(mlogCost) : undefined,
         technician: mlogTech.trim() || undefined,
       });
     } catch {
@@ -559,9 +568,9 @@ export default function AdminKamarPage() {
 
       {/* Modal: Tambah Kamar Baru */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="w-full max-w-lg bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-2xl my-8">
-            <div className="flex items-center justify-between pb-3.5 border-b border-zinc-800 mb-4">
+        <div className="kost-modal-backdrop fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4">
+          <div className="kost-modal-card flex max-h-[calc(100dvh-2rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border p-6 shadow-2xl">
+            <div className="flex shrink-0 items-center justify-between border-b border-zinc-800 px-6 py-4">
               <div className="flex items-center gap-2">
                 <Plus className="w-4 h-4 text-white" />
                 <h3 className="text-sm font-semibold text-white">Tambah Kamar Baru</h3>
@@ -571,7 +580,7 @@ export default function AdminKamarPage() {
               </button>
             </div>
 
-            <form onSubmit={handleAddSubmit} className="space-y-4 text-xs">
+            <form onSubmit={handleAddSubmit} className="min-h-0 flex-1 overflow-y-auto space-y-4 px-6 py-4 text-xs">
               {/* Row 1: Nomor Kamar & Lantai */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -631,12 +640,12 @@ export default function AdminKamarPage() {
               <div>
                 <label className="block text-zinc-400 mb-1 font-medium">Tarif Sewa Bulanan (Rp) <span className="text-rose-400">*</span></label>
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   value={priceMonthly}
-                  onChange={(e) => setPriceMonthly(Number(e.target.value))}
+                  onChange={(e) => setPriceMonthly(formatRupiahInput(e.target.value))}
                   required
-                  min={1}
-                  step={1000}
+                  placeholder="1.500.000"
                   className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs focus:outline-none focus:border-zinc-500 font-mono"
                 />
               </div>
@@ -726,8 +735,8 @@ export default function AdminKamarPage() {
 
       {/* Modal: Edit Informasi Kamar */}
       {editingRoom && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="w-full max-w-lg bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-2xl my-8">
+        <div className="kost-modal-backdrop fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4">
+          <div className="kost-modal-card w-full max-w-2xl overflow-y-auto rounded-2xl border p-6 shadow-2xl">
             <div className="flex items-center justify-between pb-3.5 border-b border-zinc-800 mb-4">
               <div className="flex items-center gap-2">
                 <Pencil className="w-4 h-4 text-white" />
@@ -811,12 +820,12 @@ export default function AdminKamarPage() {
               <div>
                 <label className="block text-zinc-400 mb-1 font-medium">Tarif Sewa Bulanan (Rp)</label>
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   value={priceMonthly}
-                  onChange={(e) => setPriceMonthly(Number(e.target.value))}
+                  onChange={(e) => setPriceMonthly(formatRupiahInput(e.target.value))}
                   required
-                  min={1}
-                  step={1000}
+                  placeholder="1.500.000"
                   className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs focus:outline-none focus:border-zinc-500 font-mono"
                 />
               </div>
@@ -908,8 +917,8 @@ export default function AdminKamarPage() {
       {maintenanceRoomId && (() => {
         const room = rooms.find((r) => r.id === maintenanceRoomId);
         return (
-          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-2xl">
+          <div className="kost-modal-backdrop fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4">
+            <div className="kost-modal-card w-full max-w-md overflow-y-auto rounded-2xl border p-6 shadow-2xl">
               <div className="flex items-center justify-between pb-3.5 border-b border-zinc-800 mb-4">
                 <div className="flex items-center gap-2">
                   <Wrench className="w-4 h-4 text-amber-400" />
@@ -935,12 +944,11 @@ export default function AdminKamarPage() {
                   <div>
                     <label className="block text-zinc-400 mb-1 font-medium">Biaya (Rp, opsional)</label>
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
                       value={mlogCost}
-                      onChange={(e) => setMlogCost(e.target.value === "" ? "" : Number(e.target.value))}
-                      placeholder="0"
-                      min={0}
-                      step={5000}
+                      onChange={(e) => setMlogCost(formatRupiahInput(e.target.value))}
+                      placeholder="Opsional"
                       className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs font-mono"
                     />
                   </div>

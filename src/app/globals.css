@@ -26,6 +26,76 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+.kost-modal-backdrop {
+  background: rgb(51 65 85 / 0.72) !important;
+  backdrop-filter: blur(5px);
+}
+
+.kost-modal-card {
+  background: #fff !important;
+  border-color: #dbe3ef !important;
+  color: #1e293b !important;
+  border-radius: 1rem;
+  max-height: calc(100dvh - 2rem);
+}
+
+.kost-modal-card [class*="border-zinc-"] {
+  border-color: #e2e8f0 !important;
+}
+
+.kost-modal-card [class*="bg-zinc-"] {
+  background-color: #f1f5f9 !important;
+}
+
+.kost-modal-card [class*="text-white"],
+.kost-modal-card [class*="text-zinc-100"],
+.kost-modal-card [class*="text-zinc-200"] {
+  color: #1e293b !important;
+}
+
+.kost-modal-card [class*="text-zinc-300"],
+.kost-modal-card [class*="text-zinc-400"] {
+  color: #475569 !important;
+}
+
+.kost-modal-card [class*="text-zinc-500"],
+.kost-modal-card [class*="text-zinc-600"] {
+  color: #64748b !important;
+}
+
+.kost-modal-card input:not([type="checkbox"]),
+.kost-modal-card textarea,
+.kost-modal-card select {
+  min-height: 2.75rem;
+  border-color: #dbe3ef !important;
+  border-radius: 0.65rem;
+  background-color: #fff !important;
+  color: #1e293b !important;
+}
+
+.kost-modal-card input::placeholder,
+.kost-modal-card textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+.kost-modal-card form > div:has(> button[type="submit"]) {
+  margin: 1rem -1.25rem -1.25rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.kost-modal-card button[class*="bg-white"] {
+  border-radius: 9999px;
+  background-color: #23439a !important;
+  color: #fff !important;
+}
+
+.kost-modal-card button[class*="bg-zinc-"] {
+  border-radius: 9999px;
+  background-color: #f1f5f9 !important;
+  color: #334155 !important;
+}
+
 html[data-theme="light"] body {
   background: #f7f6f2;
   color: #27231f;

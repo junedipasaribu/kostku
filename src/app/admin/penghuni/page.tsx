@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useKost } from "@/lib/kost-context";
 import { UserPlus, Phone, Search, X, KeyRound, UserCog } from "lucide-react";
+import { formatRupiahInput, parseRupiahInput } from "@/lib/rupiah";
 
 type TenantAccount = {
   tenantId: string | null;
@@ -40,7 +41,7 @@ export default function AdminPenghuniPage() {
   const [idCardNumber, setIdCardNumber] = useState("");
   const [roomId, setRoomId] = useState(rooms.find((r) => r.status === "AVAILABLE")?.id || rooms[0]?.id || "");
   const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0]);
-  const [depositAmount, setDepositAmount] = useState(0);
+  const [depositAmount, setDepositAmount] = useState("");
   const [emergencyName, setEmergencyName] = useState("");
   const [emergencyPhone, setEmergencyPhone] = useState("");
   const [checkinError, setCheckinError] = useState("");
@@ -164,7 +165,7 @@ export default function AdminPenghuniPage() {
         roomId: selectedRoom.id,
         roomNumber: selectedRoom.roomNumber,
         startDate,
-        depositAmount: Number(depositAmount),
+        depositAmount: parseRupiahInput(depositAmount),
         depositStatus: "HELD",
         emergencyContactName: emergencyName,
         emergencyContactPhone: emergencyPhone,
@@ -174,6 +175,7 @@ export default function AdminPenghuniPage() {
       setIsCheckinModalOpen(false);
       setFullName("");
       setIdCardNumber("");
+      setDepositAmount("");
       setEmergencyName("");
     } catch (error) {
       setCheckinError(error instanceof Error ? error.message : "Data penghuni belum dapat disimpan.");
@@ -326,8 +328,8 @@ export default function AdminPenghuniPage() {
 
       {/* Modal Check-in */}
       {isCheckinModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-xl p-5 shadow-xl">
+        <div className="kost-modal-backdrop fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4">
+          <div className="kost-modal-card w-full max-w-lg overflow-y-auto rounded-2xl border p-5 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800 mb-4">
               <h3 className="text-sm font-semibold text-white">Check-in Penghuni Baru</h3>
               <button onClick={() => setIsCheckinModalOpen(false)} className="text-zinc-500 hover:text-white">
@@ -394,11 +396,12 @@ export default function AdminPenghuniPage() {
                 <div>
                   <label className="block text-zinc-400 mb-1">Uang Deposit (Rp)</label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
                     value={depositAmount}
-                    onChange={(e) => setDepositAmount(Number(e.target.value))}
+                    onChange={(e) => setDepositAmount(formatRupiahInput(e.target.value))}
                     required
-                    min={0}
+                    placeholder="1.500.000"
                     className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs"
                   />
                 </div>
@@ -436,8 +439,8 @@ export default function AdminPenghuniPage() {
       )}
 
       {accountTenant && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-xl p-5 shadow-xl">
+        <div className="kost-modal-backdrop fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4">
+          <div className="kost-modal-card w-full max-w-md overflow-y-auto rounded-2xl border p-5 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800 mb-4">
               <div>
                 <h3 className="text-sm font-semibold text-white">{accountByTenant.has(accountTenant.id) ? "Kelola akun portal" : "Buat akun portal"}</h3>

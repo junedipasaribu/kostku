@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import PaymentSubmission from "./payment-submission";
 
 const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 
@@ -10,7 +11,7 @@ export default async function TenantBillingPage() {
   const [invoices, building] = await Promise.all([
     prisma.invoice.findMany({
       where: { tenantId: user.tenantId },
-      select: { invoiceNumber: true, periodMonth: true, periodYear: true, amount: true, dueDate: true, status: true, paidAt: true },
+      select: { id: true, invoiceNumber: true, periodMonth: true, periodYear: true, amount: true, dueDate: true, status: true, paidAt: true, paymentProof: true, paymentMethod: true, notes: true },
       orderBy: [{ dueDate: "desc" }, { createdAt: "desc" }],
     }),
     prisma.buildingConfig.findUnique({ where: { id: "default" }, select: { bankName: true, bankAccount: true, bankHolder: true } }),
@@ -26,7 +27,7 @@ export default async function TenantBillingPage() {
         <aside className="rounded-xl border border-zinc-800 bg-zinc-900/30 p-4 text-xs text-zinc-300">
           <p className="font-semibold text-white">Informasi pembayaran</p>
           <p className="mt-1">{building.bankName} · {building.bankAccount} · a.n. {building.bankHolder}</p>
-          <p className="mt-2 text-zinc-500">Setelah membayar, hubungi pengelola untuk verifikasi.</p>
+          <p className="mt-2 text-zinc-500">Bayar ke rekening berikut, lalu kirim bukti dari tagihan yang sesuai.</p>
         </aside>
       )}
       {invoices.length ? invoices.map((invoice) => (
@@ -36,6 +37,11 @@ export default async function TenantBillingPage() {
             <span className={`rounded px-2 py-1 text-[10px] ${invoice.status === "PAID" ? "bg-emerald-950 text-emerald-300" : invoice.status === "OVERDUE" ? "bg-rose-950 text-rose-300" : "bg-amber-950 text-amber-300"}`}>{invoice.status === "PAID" ? "Lunas" : invoice.status === "PENDING_VERIFICATION" ? "Menunggu verifikasi" : invoice.status === "OVERDUE" ? "Terlambat" : "Belum dibayar"}</span>
           </div>
           <div className="mt-4 flex items-center justify-between text-xs"><span className="text-zinc-400">Jatuh tempo {invoice.dueDate.toLocaleDateString("id-ID", { dateStyle: "long", timeZone: "UTC" })}</span><span className="font-semibold text-white">Rp {invoice.amount.toLocaleString("id-ID")}</span></div>
+          {invoice.paymentMethod && <p className="mt-2 text-xs text-zinc-400">Metode: {invoice.paymentMethod}</p>}
+          {invoice.status === "UNPAID" && invoice.notes && <p className="mt-3 text-xs text-rose-300">{invoice.notes}</p>}
+          {invoice.status === "PENDING_VERIFICATION" && <p className="mt-3 text-xs text-amber-300">Bukti sudah dikirim dan sedang menunggu verifikasi pengelola.</p>}
+          {invoice.status === "PAID" && invoice.paidAt && <p className="mt-3 text-xs text-emerald-400">Pembayaran dikonfirmasi {invoice.paidAt.toLocaleDateString("id-ID", { dateStyle: "long", timeZone: "UTC" })}.</p>}
+          <PaymentSubmission invoiceId={invoice.id} status={invoice.status} />
         </article>
       )) : <p className="rounded-xl border border-zinc-800 bg-zinc-900/30 p-5 text-sm text-zinc-400">Belum ada tagihan yang diterbitkan.</p>}
     </section>

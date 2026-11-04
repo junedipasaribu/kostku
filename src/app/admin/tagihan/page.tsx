@@ -369,13 +369,19 @@ export default function AdminTagihanPage() {
                       </button>
 
                       {inv.status === "PENDING_VERIFICATION" && (
-                        <button
-                          onClick={() => updateInvoiceStatus(inv.id, "PAID")}
-                          className="px-2.5 py-1 rounded bg-white text-black font-medium text-xs hover:bg-zinc-200 transition-colors flex items-center gap-1"
-                        >
-                          <Check className="w-3 h-3" />
-                          <span>Lunas</span>
-                        </button>
+                        <>
+                          <button
+                            onClick={() => updateInvoiceStatus(inv.id, "UNPAID")}
+                            className="px-2.5 py-1 rounded bg-zinc-800 text-zinc-300 font-medium text-xs hover:bg-zinc-700 transition-colors"
+                          >Tolak</button>
+                          <button
+                            onClick={() => updateInvoiceStatus(inv.id, "PAID")}
+                            className="px-2.5 py-1 rounded bg-white text-black font-medium text-xs hover:bg-zinc-200 transition-colors flex items-center gap-1"
+                          >
+                            <Check className="w-3 h-3" />
+                            <span>Konfirmasi lunas</span>
+                          </button>
+                        </>
                       )}
 
                       {inv.status !== "PAID" && (

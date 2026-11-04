@@ -187,7 +187,7 @@ export function KostProvider({ children }: { children: React.ReactNode }) {
   const updateInvoiceStatus = async (invoiceId: string, status: InvoiceData["status"], paymentProof?: string, method?: string) => {
     try {
       await requestOperation("invoice.status", { id: invoiceId, status, paymentProof, method });
-      setInvoices((prev) => prev.map((invoice) => invoice.id === invoiceId ? { ...invoice, status, paidAt: status === "PAID" ? new Date().toISOString() : undefined, paymentProof: paymentProof ?? invoice.paymentProof, paymentMethod: method ?? invoice.paymentMethod } : invoice));
+      setInvoices((prev) => prev.map((invoice) => invoice.id === invoiceId ? { ...invoice, status, paidAt: status === "PAID" ? new Date().toISOString() : undefined, paymentProof: status === "UNPAID" ? undefined : paymentProof ?? invoice.paymentProof, paymentMethod: status === "UNPAID" ? undefined : method ?? invoice.paymentMethod } : invoice));
     } catch (error) { reportError(error); }
   };
 

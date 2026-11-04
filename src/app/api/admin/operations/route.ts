@@ -254,7 +254,14 @@ export async function POST(request: Request) {
         const id = text(data.id, 80);
         const status = data.status;
         if (!id || !invoiceStatuses.includes(status as typeof invoiceStatuses[number])) return invalid("Status tagihan tidak valid");
-        await prisma.invoice.update({ where: { id }, data: { status: status as typeof invoiceStatuses[number], paidAt: status === "PAID" ? new Date() : null } });
+        if (status !== "PAID" && status !== "UNPAID") return invalid("Status tujuan tidak didukung");
+        const updated = await prisma.invoice.updateMany({
+          where: { id, status: "PENDING_VERIFICATION" },
+          data: status === "PAID"
+            ? { status, paidAt: new Date(), notes: null }
+            : { status, paidAt: null, paymentProof: null, paymentMethod: null, notes: "Bukti pembayaran ditolak. Silakan kirim ulang." },
+        });
+        if (!updated.count) return NextResponse.json({ error: "Tagihan tidak menunggu verifikasi" }, { status: 409 });
         return NextResponse.json({ success: true });
       }
       case "complaint.status": {

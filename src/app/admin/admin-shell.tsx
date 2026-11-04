@@ -59,7 +59,7 @@ export default function AdminLayout({
       badge: pendingVerificationCount > 0 ? `${pendingVerificationCount}` : undefined,
     },
     {
-      label: "Beban Operasional",
+      label: "Cashflow Operational",
       href: "/admin/pengeluaran",
       icon: Wallet,
     },

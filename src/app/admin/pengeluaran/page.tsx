@@ -8,7 +8,7 @@ import { formatRupiahInput, parseRupiahInput } from "@/lib/rupiah";
 import { Plus, X } from "lucide-react";
 
 export default function AdminPengeluaranPage() {
-  const { expenses, addExpense } = useKost();
+  const { expenses, invoices, addExpense } = useKost();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const [category, setCategory] = useState<"Listrik" | "Air/PDAM" | "WiFi" | "Kebersihan & Sampah" | "Maintenance & Perbaikan">("Listrik");
@@ -16,7 +16,15 @@ export default function AdminPengeluaranPage() {
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
 
-  const totalExpense = expenses.reduce((acc, e) => acc + e.amount, 0);
+  const monthKey = new Date().toISOString().slice(0, 7);
+  const monthlyIncome = invoices.filter((invoice) => invoice.status === "PAID" && invoice.paidAt?.slice(0, 7) === monthKey).reduce((sum, invoice) => sum + invoice.amount, 0);
+  const monthlyExpense = expenses.filter((expense) => expense.date.slice(0, 7) === monthKey).reduce((sum, expense) => sum + expense.amount, 0);
+  const monthlyNet = monthlyIncome - monthlyExpense;
+  const totalExpense = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const transactions = [
+    ...invoices.filter((invoice) => invoice.status === "PAID" && invoice.paidAt).map((invoice) => ({ id: `income-${invoice.id}`, kind: "Pemasukan" as const, detail: `Sewa ${invoice.periodMonth} ${invoice.periodYear} · ${invoice.tenantName}`, date: invoice.paidAt!.slice(0, 10), amount: invoice.amount })),
+    ...expenses.map((expense) => ({ id: `expense-${expense.id}`, kind: "Pengeluaran" as const, detail: `${expense.category} · ${expense.description}`, date: expense.date, amount: expense.amount })),
+  ].sort((a, b) => b.date.localeCompare(a.date));
 
   // Chart data: pengeluaran per kategori
   const byCategory = expenses.reduce<Record<string, number>>((acc, e) => {
@@ -53,10 +61,10 @@ export default function AdminPengeluaranPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-zinc-800/80">
         <div>
           <h1 className="text-xl font-semibold text-white tracking-tight">
-            Pengeluaran Operasional
+            Cashflow Operational
           </h1>
           <p className="text-xs text-zinc-400 mt-0.5">
-            Pencatatan biaya utilitas dan operasional gedung kosan.
+            Pantau pemasukan sewa yang sudah dibayar dan seluruh biaya operasional.
           </p>
         </div>
 
@@ -69,15 +77,10 @@ export default function AdminPengeluaranPage() {
         </button>
       </div>
 
-      {/* Summary Box */}
-      <div className="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/80 flex items-center justify-between">
-        <div>
-          <span className="text-xs text-zinc-400">Total Pengeluaran Bulan Ini</span>
-          <p className="text-xl font-semibold text-white mt-1">
-            Rp {totalExpense.toLocaleString("id-ID")}
-          </p>
-        </div>
-        <span className="text-xs text-zinc-500">{expenses.length} transaksi tercatat</span>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/40 p-4"><span className="text-xs text-zinc-400">Pemasukan bulan ini</span><p className="mt-1 text-xl font-semibold text-emerald-400">Rp {monthlyIncome.toLocaleString("id-ID")}</p></div>
+        <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/40 p-4"><span className="text-xs text-zinc-400">Pengeluaran bulan ini</span><p className="mt-1 text-xl font-semibold text-rose-400">Rp {monthlyExpense.toLocaleString("id-ID")}</p></div>
+        <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/40 p-4"><span className="text-xs text-zinc-400">Arus kas bersih</span><p className={`mt-1 text-xl font-semibold ${monthlyNet >= 0 ? "text-white" : "text-rose-400"}`}>Rp {monthlyNet.toLocaleString("id-ID")}</p></div>
       </div>
 
       {/* Chart: Breakdown per Kategori */}
@@ -114,23 +117,24 @@ export default function AdminPengeluaranPage() {
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="border-b border-zinc-800/80 text-zinc-400 bg-zinc-950/40">
-                <th className="p-3.5 font-medium">Kategori</th>
+                <th className="p-3.5 font-medium">Jenis</th>
                 <th className="p-3.5 font-medium">Keterangan</th>
                 <th className="p-3.5 font-medium">Tanggal</th>
-                <th className="p-3.5 font-medium text-right">Biaya</th>
+                <th className="p-3.5 font-medium text-right">Nominal</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/40 text-zinc-300">
-              {expenses.map((exp) => (
-                <tr key={exp.id} className="hover:bg-zinc-900/40 transition-colors">
-                  <td className="p-3.5 font-medium text-white">{exp.category}</td>
-                  <td className="p-3.5 text-zinc-400">{exp.description}</td>
-                  <td className="p-3.5 text-zinc-500">{exp.date}</td>
-                  <td className="p-3.5 text-right font-medium text-white">
-                    Rp {exp.amount.toLocaleString("id-ID")}
+              {transactions.map((transaction) => (
+                <tr key={transaction.id} className="hover:bg-zinc-900/40 transition-colors">
+                  <td className={`p-3.5 font-medium ${transaction.kind === "Pemasukan" ? "text-emerald-400" : "text-rose-400"}`}>{transaction.kind}</td>
+                  <td className="p-3.5 text-zinc-300">{transaction.detail}</td>
+                  <td className="p-3.5 text-zinc-500">{transaction.date}</td>
+                  <td className={`p-3.5 text-right font-medium ${transaction.kind === "Pemasukan" ? "text-emerald-400" : "text-zinc-200"}`}>
+                    {transaction.kind === "Pemasukan" ? "+" : "−"}Rp {transaction.amount.toLocaleString("id-ID")}
                   </td>
                 </tr>
               ))}
+              {!transactions.length && <tr><td colSpan={4} className="p-5 text-center text-zinc-500">Belum ada transaksi cashflow.</td></tr>}
             </tbody>
           </table>
         </div>

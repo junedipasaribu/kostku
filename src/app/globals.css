@@ -264,6 +264,21 @@ html[data-theme="light"] [class*="bg-black/"][class*="text-white"] {
   color: #fff !important;
 }
 
+html[data-theme="light"] .theme-brand-header,
+html[data-theme="light"] .theme-brand-header a:not([class*="bg-"]),
+html[data-theme="light"] .theme-brand-header span:not([class*="bg-"]) {
+  color: #f8fafc !important;
+}
+
+html[data-theme="light"] .theme-brand-header [class*="text-zinc-400"],
+html[data-theme="light"] .theme-brand-header [class*="text-zinc-500"] {
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] .theme-brand-header [class*="bg-white/5"] {
+  color: #f8fafc !important;
+}
+
 html[data-theme="light"] [class*="border-white/"],
 html[data-theme="light"] [class*="border-zinc-800"],
 html[data-theme="light"] [class*="border-zinc-700"] {

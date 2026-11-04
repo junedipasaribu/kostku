@@ -61,7 +61,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#090807] text-zinc-100 selection:bg-[#c5a880] selection:text-black">
       {/* 1. Header / Navbar */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-[#090807]/80 border-b border-white/10">
+      <header className="theme-brand-header sticky top-0 z-50 backdrop-blur-xl bg-[#090807]/80 border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#c5a880] to-[#8a6839] flex items-center justify-center text-black font-black text-xl shadow-lg shadow-[#c5a880]/20">

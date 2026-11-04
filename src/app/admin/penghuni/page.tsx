@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useKost } from "@/lib/kost-context";
 import { UserPlus, Phone, Search, X, KeyRound, UserCog } from "lucide-react";
+import ModalPortal from "@/components/ui/modal-portal";
 import { formatRupiahInput, parseRupiahInput } from "@/lib/rupiah";
 
 type TenantAccount = {
@@ -328,6 +329,7 @@ export default function AdminPenghuniPage() {
 
       {/* Modal Check-in */}
       {isCheckinModalOpen && (
+        <ModalPortal>
         <div className="kost-modal-backdrop fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4">
           <div className="kost-modal-card w-full max-w-md overflow-y-auto rounded-2xl border shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800 mb-4">
@@ -436,9 +438,11 @@ export default function AdminPenghuniPage() {
             </form>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {accountTenant && (
+        <ModalPortal>
         <div className="kost-modal-backdrop fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4">
           <div className="kost-modal-card w-full max-w-md overflow-y-auto rounded-2xl border shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800 mb-4">
@@ -476,6 +480,7 @@ export default function AdminPenghuniPage() {
             </form>
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );

@@ -329,7 +329,7 @@ export default function AdminPenghuniPage() {
       {/* Modal Check-in */}
       {isCheckinModalOpen && (
         <div className="kost-modal-backdrop fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4">
-          <div className="kost-modal-card w-full max-w-lg overflow-y-auto rounded-2xl border p-5 shadow-2xl">
+          <div className="kost-modal-card w-full max-w-md overflow-y-auto rounded-2xl border shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800 mb-4">
               <h3 className="text-sm font-semibold text-white">Check-in Penghuni Baru</h3>
               <button onClick={() => setIsCheckinModalOpen(false)} className="text-zinc-500 hover:text-white">
@@ -440,7 +440,7 @@ export default function AdminPenghuniPage() {
 
       {accountTenant && (
         <div className="kost-modal-backdrop fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4">
-          <div className="kost-modal-card w-full max-w-md overflow-y-auto rounded-2xl border p-5 shadow-2xl">
+          <div className="kost-modal-card w-full max-w-md overflow-y-auto rounded-2xl border shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800 mb-4">
               <div>
                 <h3 className="text-sm font-semibold text-white">{accountByTenant.has(accountTenant.id) ? "Kelola akun portal" : "Buat akun portal"}</h3>

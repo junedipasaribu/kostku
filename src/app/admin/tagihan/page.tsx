@@ -394,7 +394,7 @@ export default function AdminTagihanPage() {
       {/* Modal Preview Bukti */}
       {selectedProofUrl && (
         <div className="kost-modal-backdrop fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4">
-          <div className="kost-modal-card w-full max-w-md overflow-y-auto rounded-2xl border p-5 shadow-2xl">
+          <div className="kost-modal-card w-full max-w-md overflow-y-auto rounded-2xl border shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800 mb-4">
               <h3 className="text-sm font-semibold text-white">Bukti Transfer</h3>
               <button onClick={() => setSelectedProofUrl(null)} className="text-zinc-500 hover:text-white">
@@ -404,7 +404,7 @@ export default function AdminTagihanPage() {
             <div className="rounded-lg overflow-hidden bg-zinc-900 border border-zinc-800 mb-4">
               <img src={selectedProofUrl} alt="Bukti Transfer" className="w-full h-auto max-h-80 object-contain" />
             </div>
-            <div className="flex justify-end">
+            <div className="kost-modal-actions flex justify-end">
               <button onClick={() => setSelectedProofUrl(null)} className="px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 text-xs">
                 Tutup
               </button>

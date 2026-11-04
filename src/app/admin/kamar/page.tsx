@@ -569,8 +569,8 @@ export default function AdminKamarPage() {
       {/* Modal: Tambah Kamar Baru */}
       {isAddModalOpen && (
         <div className="kost-modal-backdrop fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4">
-          <div className="kost-modal-card flex max-h-[calc(100dvh-2rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border p-6 shadow-2xl">
-            <div className="flex shrink-0 items-center justify-between border-b border-zinc-800 px-6 py-4">
+          <div className="kost-modal-card flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border shadow-2xl">
+            <div className="flex shrink-0 items-center justify-between border-b border-zinc-800 px-1 py-3">
               <div className="flex items-center gap-2">
                 <Plus className="w-4 h-4 text-white" />
                 <h3 className="text-sm font-semibold text-white">Tambah Kamar Baru</h3>
@@ -580,7 +580,7 @@ export default function AdminKamarPage() {
               </button>
             </div>
 
-            <form onSubmit={handleAddSubmit} className="min-h-0 flex-1 overflow-y-auto space-y-4 px-6 py-4 text-xs">
+            <form onSubmit={handleAddSubmit} className="min-h-0 flex-1 overflow-y-auto space-y-4 px-1 py-4 text-xs">
               {/* Row 1: Nomor Kamar & Lantai */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -736,7 +736,7 @@ export default function AdminKamarPage() {
       {/* Modal: Edit Informasi Kamar */}
       {editingRoom && (
         <div className="kost-modal-backdrop fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4">
-          <div className="kost-modal-card w-full max-w-2xl overflow-y-auto rounded-2xl border p-6 shadow-2xl">
+          <div className="kost-modal-card w-full max-w-lg overflow-y-auto rounded-2xl border shadow-2xl">
             <div className="flex items-center justify-between pb-3.5 border-b border-zinc-800 mb-4">
               <div className="flex items-center gap-2">
                 <Pencil className="w-4 h-4 text-white" />
@@ -918,7 +918,7 @@ export default function AdminKamarPage() {
         const room = rooms.find((r) => r.id === maintenanceRoomId);
         return (
           <div className="kost-modal-backdrop fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4">
-            <div className="kost-modal-card w-full max-w-md overflow-y-auto rounded-2xl border p-6 shadow-2xl">
+            <div className="kost-modal-card w-full max-w-md overflow-y-auto rounded-2xl border shadow-2xl">
               <div className="flex items-center justify-between pb-3.5 border-b border-zinc-800 mb-4">
                 <div className="flex items-center gap-2">
                   <Wrench className="w-4 h-4 text-amber-400" />

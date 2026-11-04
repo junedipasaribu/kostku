@@ -84,6 +84,12 @@ body {
   border-top: 1px solid #e2e8f0;
 }
 
+.kost-modal-actions {
+  margin: 1rem -1.25rem -1.25rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid #e2e8f0;
+}
+
 .kost-modal-card button[class*="bg-white"] {
   border-radius: 9999px;
   background-color: #23439a !important;
@@ -273,6 +279,137 @@ html[data-theme="light"] select {
 html[data-theme="light"] input::placeholder,
 html[data-theme="light"] textarea::placeholder {
   color: #777168;
+}
+
+html[data-theme="light"] .kost-modal-card {
+  background: #fff !important;
+  border-color: #dbe3ef !important;
+  color: #1e293b !important;
+}
+
+html[data-theme="light"] .kost-modal-card [class*="bg-zinc-"] {
+  background-color: #f1f5f9 !important;
+}
+
+html[data-theme="light"] .kost-modal-card [class*="text-white"],
+html[data-theme="light"] .kost-modal-card [class*="text-zinc-100"],
+html[data-theme="light"] .kost-modal-card [class*="text-zinc-200"] {
+  color: #1e293b !important;
+}
+
+html[data-theme="light"] .kost-modal-card [class*="text-zinc-300"],
+html[data-theme="light"] .kost-modal-card [class*="text-zinc-400"] {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .kost-modal-card [class*="text-zinc-500"],
+html[data-theme="light"] .kost-modal-card [class*="text-zinc-600"] {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] .kost-modal-card input:not([type="checkbox"]),
+html[data-theme="light"] .kost-modal-card textarea,
+html[data-theme="light"] .kost-modal-card select {
+  background-color: #fff !important;
+  border-color: #dbe3ef !important;
+  color: #1e293b !important;
+}
+
+html[data-theme="light"] .kost-modal-card button[class*="bg-white"] {
+  background-color: #23439a !important;
+  color: #fff !important;
+}
+
+html[data-theme="light"] .kost-modal-card button[class*="bg-zinc-"] {
+  background-color: #f1f5f9 !important;
+  color: #334155 !important;
+}
+
+.kost-modal-backdrop {
+  background: rgb(15 23 42 / 0.65) !important;
+  backdrop-filter: blur(6px);
+}
+
+.kost-modal-card {
+  width: 100%;
+  max-width: min(500px, calc(100vw - 32px)) !important;
+  border-radius: 1.25rem;
+  box-shadow: 0 20px 50px rgb(15 23 42 / 0.2);
+}
+
+.kost-modal-card > div:first-child {
+  padding: 18px 24px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.kost-modal-card > div:nth-child(2) {
+  padding: 24px;
+}
+
+.kost-modal-card > form {
+  padding: 24px !important;
+}
+
+.kost-modal-card form > div:has(> button[type="submit"]) {
+  margin: 16px -24px -24px;
+  padding: 16px 24px;
+  border-top: 1px solid #e2e8f0;
+  gap: 10px;
+}
+
+.kost-modal-actions {
+  margin: 16px -24px -24px;
+  padding: 16px 24px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.kost-modal-card input:not([type="checkbox"]),
+.kost-modal-card textarea,
+.kost-modal-card select {
+  min-height: 44px;
+  border: 1px solid #dbe3ef !important;
+  border-radius: 10px;
+  background: #fff !important;
+  color: #1e293b !important;
+  font-size: 14px;
+}
+
+.kost-modal-card label {
+  color: #334155 !important;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.kost-modal-card h2,
+.kost-modal-card h3 {
+  color: #1e293b !important;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.kost-modal-card button[class*="bg-white"] {
+  background: #23439a !important;
+  color: #fff !important;
+}
+
+.kost-modal-card button[class*="bg-zinc-"] {
+  background: #f1f5f9 !important;
+  color: #334155 !important;
+}
+
+.kost-modal-card form {
+  font-size: 0.875rem;
+}
+
+.kost-modal-card form label {
+  font-size: 0.8125rem;
+}
+
+.kost-modal-card h2,
+.kost-modal-card h3 {
+  color: #1e293b !important;
+  font-size: 1.0625rem;
+  line-height: 1.4;
 }
 
 /* Page Slideshow Transition */

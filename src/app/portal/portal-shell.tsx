@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { AlertCircle, Home, LogOut, Menu, Phone, Receipt, X } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { BackgroundPicker } from "@/components/ui/background-picker";
 
 type TenantInfo = { name: string; phone: string; roomNumber: string; roomType: string };
 
@@ -20,6 +21,7 @@ export default function TenantShell({ children, tenant, building }: { children: 
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
+    window.dispatchEvent(new Event("kostku:session-changed"));
     router.replace("/login");
     router.refresh();
   }
@@ -30,6 +32,7 @@ export default function TenantShell({ children, tenant, building }: { children: 
         <span className="font-semibold text-white text-sm">Kamar {tenant.roomNumber}</span>
         <div className="flex items-center gap-2">
           <ThemeToggle compact className="px-2.5" />
+          <BackgroundPicker compact />
           <button type="button" onClick={() => setIsMobileMenuOpen((open) => !open)} aria-label="Buka menu" className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white">
             {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -57,6 +60,7 @@ export default function TenantShell({ children, tenant, building }: { children: 
         </div>
         <div className="pt-4 border-t border-zinc-800/80 space-y-2">
           <ThemeToggle className="w-full" />
+          <BackgroundPicker className="w-full" placement="top" />
           <a href={building.ownerPhone ? `https://wa.me/${building.ownerPhone}` : undefined} target="_blank" rel="noreferrer" aria-disabled={!building.ownerPhone} className="w-full py-1.5 px-3 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 text-xs font-medium flex items-center justify-center gap-1.5">
             <Phone className="w-3.5 h-3.5" /><span>WhatsApp Pengelola</span>
           </a>

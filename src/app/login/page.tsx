@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { BackgroundPicker } from "@/components/ui/background-picker";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -28,6 +29,7 @@ export default function LoginPage() {
         setError(payload.error ?? "Email atau kata sandi salah.");
         return;
       }
+      window.dispatchEvent(new Event("kostku:session-changed"));
       router.replace(payload.user.role === "TENANT" ? "/portal" : "/admin");
       router.refresh();
     } catch {
@@ -40,7 +42,10 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-[#0c0c0e] flex flex-col justify-center items-center px-4 py-12 text-zinc-100 antialiased">
       <div className="relative text-center mb-8">
-        <ThemeToggle className="absolute right-0 top-0 translate-x-1/2 sm:translate-x-full" />
+        <div className="absolute right-0 top-0 flex translate-x-1/2 gap-2 sm:translate-x-full">
+          <ThemeToggle />
+          <BackgroundPicker compact />
+        </div>
         <Link href="/" className="inline-flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-white text-black flex items-center justify-center font-bold text-sm">K</div>
           <span className="text-lg font-semibold tracking-tight text-white">Kostku</span>

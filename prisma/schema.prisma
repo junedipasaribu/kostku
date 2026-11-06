@@ -62,6 +62,8 @@ model User {
   phone        String?
   role         Role      @default(TENANT)
   isActive     Boolean   @default(true)
+  preferredTheme      String?
+  preferredBackground String?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 

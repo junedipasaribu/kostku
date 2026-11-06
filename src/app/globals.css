@@ -515,3 +515,16 @@ html:not([data-theme="light"]) .kost-modal-card [class*="border-zinc-"],
 html[data-theme="light"] .kost-modal-card [class*="border-zinc-"] {
   border-color: #e2e8f0 !important;
 }
+
+/* Personal background tint; blending with the active theme keeps foreground contrast safe. */
+html:not([data-theme="light"])[data-custom-background="true"] body,
+html:not([data-theme="light"])[data-custom-background="true"] [class~="bg-[#090807]"],
+html:not([data-theme="light"])[data-custom-background="true"] [class~="bg-[#0c0c0e]"] {
+  background-color: color-mix(in srgb, var(--user-background) 38%, #0c0c0e) !important;
+}
+
+html[data-theme="light"][data-custom-background="true"] body,
+html[data-theme="light"][data-custom-background="true"] [class~="bg-[#090807]"],
+html[data-theme="light"][data-custom-background="true"] [class~="bg-[#0c0c0e]"] {
+  background-color: color-mix(in srgb, var(--user-background) 38%, #f7f6f2) !important;
+}

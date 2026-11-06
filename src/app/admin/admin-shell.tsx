@@ -20,6 +20,7 @@ import {
   History,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { BackgroundPicker } from "@/components/ui/background-picker";
 
 export default function AdminLayout({
   children,
@@ -84,6 +85,7 @@ export default function AdminLayout({
 
   const handleLogout = async () => {
     await logout();
+    window.dispatchEvent(new Event("kostku:session-changed"));
     router.replace("/login");
     router.refresh();
   };
@@ -123,6 +125,7 @@ export default function AdminLayout({
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle compact className="px-2.5" />
+          <BackgroundPicker compact />
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white"
@@ -196,6 +199,7 @@ export default function AdminLayout({
         {/* Footer Profile */}
         <div className="pt-4 border-t border-zinc-800/80 space-y-2">
           <ThemeToggle className="w-full" />
+          <BackgroundPicker className="w-full" placement="top" />
           <div className="px-3 py-2 rounded-lg bg-zinc-900/40 border border-zinc-800/60 flex items-center justify-between">
             <div className="truncate">
               <p className="text-xs font-medium text-zinc-200 truncate">{user.name}</p>

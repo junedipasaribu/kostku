@@ -16,6 +16,8 @@ export type AuthUser = {
   name: string;
   role: "OWNER" | "ADMIN" | "TENANT";
   tenantId: string | null;
+  preferredTheme: string | null;
+  preferredBackground: string | null;
 };
 
 export async function hashPassword(password: string) {
@@ -68,6 +70,8 @@ export async function getSessionUser(): Promise<AuthUser | null> {
     name: session.user.name,
     role: session.user.role,
     tenantId: session.user.tenantProfile?.id ?? null,
+    preferredTheme: session.user.preferredTheme,
+    preferredBackground: session.user.preferredBackground,
   };
 }
 

@@ -26,6 +26,7 @@ import {
   Home as HomeIcon,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { BackgroundPicker } from "@/components/ui/background-picker";
 
 export default function Home() {
   const [site, setSite] = useState<{ building: Pick<BuildingInfo, "name" | "tagline" | "address" | "ownerPhone" | "rules" | "sharedFacilities"> | null; rooms: RoomData[] }>({ building: null, rooms: [] });
@@ -83,6 +84,7 @@ export default function Home() {
 
           <div className="flex items-center gap-3">
             <ThemeToggle compact className="px-2.5 sm:px-3" />
+            <BackgroundPicker compact />
             <Link
               href="/portal"
               className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/5 hover:bg-white/10 text-white border border-white/10 transition-colors flex items-center gap-1.5"

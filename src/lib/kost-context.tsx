@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { BuildingInfo, RoomData, TenantData, InvoiceData, ExpenseData, ComplaintData, MaintenanceLog } from "./data";
 
 interface KostContextType {
@@ -11,6 +11,8 @@ interface KostContextType {
   expenses: ExpenseData[];
   complaints: ComplaintData[];
   currentUser: { role: "ADMIN" | "TENANT"; name: string; roomNumber?: string; tenantId?: string };
+  paymentAlerts: PaymentAlert[];
+  dismissPaymentAlert: (id: string) => void;
   logout: () => Promise<void>;
   updateBuilding: (value: BuildingInfo) => Promise<void>;
   updateRoomStatus: (roomId: string, status: RoomData["status"]) => Promise<void>;
@@ -25,6 +27,14 @@ interface KostContextType {
   updateComplaintStatus: (complaintId: string, status: ComplaintData["status"]) => Promise<void>;
   addComplaint: (complaint: Pick<ComplaintData, "title" | "description">) => Promise<void>;
   isLoading: boolean;
+}
+
+export interface PaymentAlert {
+  id: string;
+  invoiceNumber: string;
+  tenantName: string;
+  roomNumber: string;
+  amount: number;
 }
 
 const emptyBuilding: BuildingInfo = { name: "", tagline: "", address: "", ownerName: "", ownerPhone: "", bankName: "", bankAccount: "", bankHolder: "", qrisUrl: "", rules: [], sharedFacilities: [] };
@@ -75,20 +85,55 @@ export function KostProvider({ children }: { children: React.ReactNode }) {
   const [complaints, setComplaints] = useState<ComplaintData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<KostContextType["currentUser"]>({ role: "TENANT", name: "" });
+  const [paymentAlerts, setPaymentAlerts] = useState<PaymentAlert[]>([]);
+  const previousInvoiceStatuses = useRef<Map<string, InvoiceData["status"]> | null>(null);
+  const isRefreshingOperations = useRef(false);
 
-  const refreshOperations = async () => {
-    const response = await fetch("/api/admin/operations", { cache: "no-store" });
-    if (!response.ok) throw new Error("Data operasional belum dapat dimuat");
-    const payload = await response.json();
-    setRooms(Array.isArray(payload.rooms) ? payload.rooms : []);
-    setInvoices(Array.isArray(payload.invoices) ? payload.invoices : []);
-    setExpenses(Array.isArray(payload.expenses) ? payload.expenses : []);
-    setComplaints(Array.isArray(payload.complaints) ? payload.complaints : []);
-    setBuilding(payload.building ?? emptyBuilding);
-  };
+  const refreshOperations = useCallback(async () => {
+    if (isRefreshingOperations.current) return;
+    isRefreshingOperations.current = true;
+    try {
+      const response = await fetch("/api/admin/operations", { cache: "no-store" });
+      if (!response.ok) throw new Error("Data operasional belum dapat dimuat");
+      const payload = await response.json();
+      const nextInvoices: InvoiceData[] = Array.isArray(payload.invoices) ? payload.invoices : [];
+      const previousStatuses = previousInvoiceStatuses.current;
+
+      if (previousStatuses) {
+        const newPaymentProofs = nextInvoices.filter((invoice) =>
+          invoice.status === "PENDING_VERIFICATION" && previousStatuses.get(invoice.id) !== "PENDING_VERIFICATION"
+        );
+        if (newPaymentProofs.length > 0) {
+          setPaymentAlerts((current) => [
+            ...newPaymentProofs.map((invoice) => ({
+              id: `${invoice.id}-${Date.now()}`,
+              invoiceNumber: invoice.invoiceNumber,
+              tenantName: invoice.tenantName,
+              roomNumber: invoice.roomNumber,
+              amount: invoice.amount,
+            })),
+            ...current,
+          ].slice(0, 5));
+        }
+      }
+
+      previousInvoiceStatuses.current = new Map(nextInvoices.map((invoice) => [invoice.id, invoice.status]));
+      setRooms(Array.isArray(payload.rooms) ? payload.rooms : []);
+      setInvoices(nextInvoices);
+      setExpenses(Array.isArray(payload.expenses) ? payload.expenses : []);
+      setComplaints(Array.isArray(payload.complaints) ? payload.complaints : []);
+      setBuilding(payload.building ?? emptyBuilding);
+    } finally {
+      isRefreshingOperations.current = false;
+    }
+  }, []);
 
   useEffect(() => {
     let active = true;
+    let refreshTimer: number | undefined;
+    const refreshVisibleAdminData = () => {
+      if (document.visibilityState === "visible") void refreshOperations().catch(() => undefined);
+    };
     void (async () => {
       try {
         const sessionResponse = await fetch("/api/auth/session", { cache: "no-store" });
@@ -100,6 +145,9 @@ export function KostProvider({ children }: { children: React.ReactNode }) {
         if (user.role === "OWNER" || user.role === "ADMIN") {
           const serverTenants = await loadTenantRecords();
           if (serverTenants && active) setTenants(serverTenants);
+          if (!active) return;
+          refreshTimer = window.setInterval(refreshVisibleAdminData, 10_000);
+          window.addEventListener("focus", refreshVisibleAdminData);
           await refreshOperations();
         }
       } catch {
@@ -108,7 +156,15 @@ export function KostProvider({ children }: { children: React.ReactNode }) {
         if (active) setIsLoading(false);
       }
     })();
-    return () => { active = false; };
+    return () => {
+      active = false;
+      if (refreshTimer !== undefined) window.clearInterval(refreshTimer);
+      window.removeEventListener("focus", refreshVisibleAdminData);
+    };
+  }, [refreshOperations]);
+
+  const dismissPaymentAlert = useCallback((id: string) => {
+    setPaymentAlerts((current) => current.filter((alert) => alert.id !== id));
   }, []);
 
   const reportError = (error: unknown) => {
@@ -188,7 +244,8 @@ export function KostProvider({ children }: { children: React.ReactNode }) {
     try {
       await requestOperation("invoice.status", { id: invoiceId, status, paymentProof, method });
       setInvoices((prev) => prev.map((invoice) => invoice.id === invoiceId ? { ...invoice, status, paidAt: status === "PAID" ? new Date().toISOString() : undefined, paymentProof: status === "UNPAID" ? undefined : paymentProof ?? invoice.paymentProof, paymentMethod: status === "UNPAID" ? undefined : method ?? invoice.paymentMethod } : invoice));
-    } catch (error) { reportError(error); }
+      void refreshOperations().catch(() => undefined);
+    } catch (error) { throw error; }
   };
 
   const addExpense = async (newExpense: Omit<ExpenseData, "id">) => {
@@ -212,7 +269,7 @@ export function KostProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <KostContext.Provider value={{ building, rooms, tenants, invoices, expenses, complaints, currentUser, isLoading, logout, updateBuilding, updateRoomStatus, addRoom, updateRoom, deleteRoom, addMaintenanceLog, addTenant, addInvoice, updateInvoiceStatus, addExpense, updateComplaintStatus, addComplaint }}>
+    <KostContext.Provider value={{ building, rooms, tenants, invoices, expenses, complaints, currentUser, paymentAlerts, dismissPaymentAlert, isLoading, logout, updateBuilding, updateRoomStatus, addRoom, updateRoom, deleteRoom, addMaintenanceLog, addTenant, addInvoice, updateInvoiceStatus, addExpense, updateComplaintStatus, addComplaint }}>
       {children}
     </KostContext.Provider>
   );

@@ -30,7 +30,7 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { building, logout, rooms, invoices, complaints } = useKost();
+  const { building, logout, rooms, invoices, complaints, paymentAlerts, dismissPaymentAlert } = useKost();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const pendingVerificationCount = invoices.filter((i) => i.status === "PENDING_VERIFICATION").length;
@@ -90,6 +90,27 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen bg-[#0c0c0e] text-zinc-100 flex flex-col md:flex-row antialiased">
+      {paymentAlerts.length > 0 && (
+        <div className="fixed right-4 top-4 z-[70] w-[min(380px,calc(100vw-2rem))] space-y-2" aria-live="polite">
+          {paymentAlerts.map((alert) => (
+            <div key={alert.id} role="status" className="rounded-xl border border-amber-500/50 bg-zinc-900 p-4 shadow-2xl">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold text-amber-300">Bukti pembayaran baru</p>
+                  <p className="mt-1 text-xs text-zinc-200">Kamar {alert.roomNumber} · {alert.tenantName}</p>
+                  <p className="mt-1 text-[11px] text-zinc-400">{alert.invoiceNumber} · Rp {alert.amount.toLocaleString("id-ID")}</p>
+                </div>
+                <button type="button" onClick={() => dismissPaymentAlert(alert.id)} aria-label="Tutup notifikasi" className="text-zinc-400 hover:text-white">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <Link href="/admin/tagihan" onClick={() => dismissPaymentAlert(alert.id)} className="mt-3 inline-flex rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-black hover:bg-zinc-200">
+                Buka verifikasi
+              </Link>
+            </div>
+          ))}
+        </div>
+      )}
       {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between px-5 py-3.5 bg-zinc-950 border-b border-zinc-800/80 sticky top-0 z-50">
         <div className="flex items-center gap-2.5">

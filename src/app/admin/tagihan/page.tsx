@@ -139,6 +139,29 @@ export default function AdminTagihanPage() {
   const [dueDate, setDueDate] = useState(new Date().toISOString().slice(0, 10));
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState("");
+  const [updatingInvoiceId, setUpdatingInvoiceId] = useState<string | null>(null);
+  const [verificationMessage, setVerificationMessage] = useState<{ text: string; success: boolean } | null>(null);
+
+  const pendingVerificationCount = invoices.filter((invoice) => invoice.status === "PENDING_VERIFICATION").length;
+
+  const handleVerification = async (invoice: InvoiceData, status: "PAID" | "UNPAID") => {
+    if (status === "UNPAID" && !window.confirm("Tolak bukti pembayaran ini? Penghuni dapat mengirim ulang bukti.")) return;
+    setUpdatingInvoiceId(invoice.id);
+    setVerificationMessage(null);
+    try {
+      await updateInvoiceStatus(invoice.id, status);
+      setVerificationMessage({
+        success: true,
+        text: status === "PAID"
+          ? `Pembayaran ${invoice.invoiceNumber} dikonfirmasi. Tagihan masuk ke Cashflow Operational.`
+          : `Bukti ${invoice.invoiceNumber} ditolak. Penghuni dapat mengirim ulang bukti.`,
+      });
+    } catch (error) {
+      setVerificationMessage({ success: false, text: error instanceof Error ? error.message : "Status pembayaran belum dapat diperbarui." });
+    } finally {
+      setUpdatingInvoiceId(null);
+    }
+  };
 
   const createInvoice = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -268,6 +291,24 @@ export default function AdminTagihanPage() {
         </div>
       </div>
 
+      {pendingVerificationCount > 0 && (
+        <div className="flex flex-col gap-3 rounded-xl border border-amber-500/50 bg-amber-950/40 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-amber-200">{pendingVerificationCount} bukti pembayaran menunggu verifikasi</p>
+            <p className="mt-1 text-xs text-zinc-300">Buka bukti transfer, lalu konfirmasi pembayaran agar tercatat sebagai pemasukan.</p>
+          </div>
+          <button type="button" onClick={() => setFilterStatus("PENDING_VERIFICATION")} className="shrink-0 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-black hover:bg-zinc-200">
+            Lihat yang menunggu
+          </button>
+        </div>
+      )}
+
+      {verificationMessage && (
+        <p role={verificationMessage.success ? "status" : "alert"} className={`rounded-lg border px-3 py-2 text-xs ${verificationMessage.success ? "border-emerald-500/40 bg-emerald-950/30 text-emerald-300" : "border-rose-500/40 bg-rose-950/30 text-rose-300"}`}>
+          {verificationMessage.text}
+        </p>
+      )}
+
       {/* Filter & Search */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl bg-zinc-900/40 border border-zinc-800/80 text-xs">
         <div className="relative w-full sm:w-72">
@@ -353,7 +394,7 @@ export default function AdminTagihanPage() {
                           className="text-[11px] text-zinc-400 hover:text-white underline flex items-center gap-1"
                         >
                           <FileText className="w-3 h-3" />
-                          <span>Bukti</span>
+                          <span>Lihat bukti</span>
                         </button>
                       )}
                     </div>
@@ -371,15 +412,17 @@ export default function AdminTagihanPage() {
                       {inv.status === "PENDING_VERIFICATION" && (
                         <>
                           <button
-                            onClick={() => updateInvoiceStatus(inv.id, "UNPAID")}
-                            className="px-2.5 py-1 rounded bg-zinc-800 text-zinc-300 font-medium text-xs hover:bg-zinc-700 transition-colors"
-                          >Tolak</button>
+                            onClick={() => void handleVerification(inv, "UNPAID")}
+                            disabled={updatingInvoiceId !== null}
+                            className="px-2.5 py-1 rounded bg-zinc-800 text-zinc-300 font-medium text-xs hover:bg-zinc-700 transition-colors disabled:cursor-wait disabled:opacity-50"
+                          >{updatingInvoiceId === inv.id ? "Memproses…" : "Tolak bukti"}</button>
                           <button
-                            onClick={() => updateInvoiceStatus(inv.id, "PAID")}
-                            className="px-2.5 py-1 rounded bg-white text-black font-medium text-xs hover:bg-zinc-200 transition-colors flex items-center gap-1"
+                            onClick={() => void handleVerification(inv, "PAID")}
+                            disabled={updatingInvoiceId !== null}
+                            className="px-2.5 py-1 rounded bg-white text-black font-medium text-xs hover:bg-zinc-200 transition-colors flex items-center gap-1 disabled:cursor-wait disabled:opacity-50"
                           >
                             <Check className="w-3 h-3" />
-                            <span>Konfirmasi lunas</span>
+                            <span>{updatingInvoiceId === inv.id ? "Memproses…" : "Konfirmasi pembayaran"}</span>
                           </button>
                         </>
                       )}

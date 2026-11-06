@@ -468,3 +468,50 @@ html[data-theme="light"] .kost-modal-card button[class*="bg-zinc-"] {
   animation: slideProgressLine 0.4s ease-out forwards;
   transform-origin: left;
 }
+
+/* Make admin cards and control surfaces stand apart from the page in both themes. */
+html:not([data-theme="light"]) [class*="rounded-xl"][class*="border-zinc-"] {
+  border-color: #383840 !important;
+}
+
+html:not([data-theme="light"]) [class*="rounded-lg"][class*="border-zinc-"] {
+  border-color: #3b3b44 !important;
+}
+
+html:not([data-theme="light"]) [class*="rounded-xl"][class*="bg-zinc-900"],
+html:not([data-theme="light"]) [class*="rounded-lg"][class*="bg-zinc-900"] {
+  background-color: #17171c !important;
+}
+
+html:not([data-theme="light"]) [class*="rounded-xl"][class*="bg-zinc-950"],
+html:not([data-theme="light"]) [class*="rounded-lg"][class*="bg-zinc-950"] {
+  background-color: #111115 !important;
+}
+
+html[data-theme="light"] [class*="rounded-xl"][class*="border-zinc-"],
+html[data-theme="light"] [class*="rounded-lg"][class*="border-zinc-"] {
+  border-color: #c8c2b8 !important;
+}
+
+html[data-theme="light"] [class*="rounded-xl"][class*="bg-zinc-900"],
+html[data-theme="light"] [class*="rounded-lg"][class*="bg-zinc-900"] {
+  background-color: #fff !important;
+  box-shadow: 0 1px 3px rgb(39 35 31 / 0.07);
+}
+
+html[data-theme="light"] [class*="rounded-xl"][class*="bg-zinc-950"],
+html[data-theme="light"] [class*="rounded-lg"][class*="bg-zinc-950"] {
+  background-color: #f2f0eb !important;
+}
+
+/* Keep the intentionally light modal surfaces unchanged. */
+html:not([data-theme="light"]) .kost-modal-card [class*="bg-zinc-"],
+html[data-theme="light"] .kost-modal-card [class*="bg-zinc-"] {
+  background-color: #f1f5f9 !important;
+  box-shadow: none;
+}
+
+html:not([data-theme="light"]) .kost-modal-card [class*="border-zinc-"],
+html[data-theme="light"] .kost-modal-card [class*="border-zinc-"] {
+  border-color: #e2e8f0 !important;
+}

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { recordActivity } from "@/lib/activity-log";
 import { createSession, isSameOrigin, verifyPassword } from "@/lib/auth";
 import { checkLoginRateLimit, clearLoginFailures, recordFailedLogin } from "@/lib/login-rate-limit";
 import { prisma } from "@/lib/prisma";
@@ -46,5 +47,6 @@ export async function POST(request: Request) {
 
   clearLoginFailures(limit.key);
   await createSession(user.id);
+  await recordActivity(user, { action: "auth.login", entityType: "session", summary: "Pengguna berhasil masuk." });
   return NextResponse.json({ user: { name: user.name, role: user.role } });
 }

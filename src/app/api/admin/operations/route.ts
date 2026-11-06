@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { getSessionUser, isSameOrigin } from "@/lib/auth";
+import { recordActivity } from "@/lib/activity-log";
 import { prisma } from "@/lib/prisma";
 import { readJsonRequest } from "@/lib/request-body";
 
@@ -165,6 +166,7 @@ export async function POST(request: Request) {
     const tenant = await prisma.tenant.findUnique({ where: { id: user.tenantId }, select: { id: true, roomId: true, status: true } });
     if (!tenant || tenant.status !== "ACTIVE") return forbidden();
     const complaint = await prisma.complaint.create({ data: { tenantId: tenant.id, roomId: tenant.roomId, title, description } });
+    await recordActivity(user, { action: "complaint.created", entityType: "complaint", entityId: complaint.id, summary: "Penghuni mengirim komplain fasilitas." });
     return NextResponse.json({ success: true, id: complaint.id }, { status: 201 });
   }
 
@@ -184,6 +186,7 @@ export async function POST(request: Request) {
         const room = await prisma.room.create({
           data: { roomNumber, type, priceMonthly, floor, size: text(data.size, 80) || null, status, facilities, images: image ? [image] : [] },
         });
+        await recordActivity(user, { action: "room.created", entityType: "room", entityId: room.id, summary: `Kamar ${room.roomNumber} ditambahkan.` });
         return NextResponse.json({ success: true, id: room.id }, { status: 201 });
       }
       case "room.update": {
@@ -197,6 +200,7 @@ export async function POST(request: Request) {
         const image = text(data.image, 1000);
         if (!id || !roomNumber || !roomTypes.includes(type) || priceMonthly === null || priceMonthly <= 0 || !Number.isInteger(floor) || floor < 1 || floor > 100 || !roomStatuses.includes(status as typeof roomStatuses[number])) return invalid("Data kamar tidak valid");
         await prisma.room.update({ where: { id }, data: { roomNumber, type, priceMonthly, floor, size: text(data.size, 80) || null, status: status as typeof roomStatuses[number], facilities, images: image ? [image] : [] } });
+        await recordActivity(user, { action: "room.updated", entityType: "room", entityId: id, summary: `Data kamar ${roomNumber} diperbarui.` });
         return NextResponse.json({ success: true });
       }
       case "room.status": {
@@ -204,6 +208,7 @@ export async function POST(request: Request) {
         const status = data.status;
         if (!id || !roomStatuses.includes(status as typeof roomStatuses[number])) return invalid("Status kamar tidak valid");
         await prisma.room.update({ where: { id }, data: { status: status as typeof roomStatuses[number] } });
+        await recordActivity(user, { action: "room.status_changed", entityType: "room", entityId: id, summary: `Status kamar diubah menjadi ${String(status).toLowerCase()}.` });
         return NextResponse.json({ success: true });
       }
       case "room.delete": {
@@ -215,7 +220,8 @@ export async function POST(request: Request) {
           prisma.complaint.count({ where: { roomId: id } }),
         ]);
         if (tenants || invoices || complaints) return NextResponse.json({ error: "Kamar memiliki riwayat penghuni/transaksi dan tidak dapat dihapus." }, { status: 409 });
-        await prisma.room.delete({ where: { id } });
+        const deleted = await prisma.room.delete({ where: { id }, select: { roomNumber: true } });
+        await recordActivity(user, { action: "room.deleted", entityType: "room", entityId: id, summary: `Kamar ${deleted.roomNumber} dihapus.` });
         return NextResponse.json({ success: true });
       }
       case "maintenance.create": {
@@ -225,6 +231,7 @@ export async function POST(request: Request) {
         const cost = data.cost === undefined || data.cost === null ? null : positiveAmount(data.cost);
         if (!roomId || !description || !date || (data.cost !== undefined && data.cost !== null && cost === null)) return invalid("Catatan perbaikan tidak valid");
         const log = await prisma.roomMaintenanceLog.create({ data: { roomId, description, date, cost, technician: text(data.technician, 120) || null } });
+        await recordActivity(user, { action: "maintenance.created", entityType: "room_maintenance", entityId: log.id, summary: "Catatan perbaikan kamar ditambahkan." });
         return NextResponse.json({ success: true, id: log.id }, { status: 201 });
       }
       case "expense.create": {
@@ -234,6 +241,7 @@ export async function POST(request: Request) {
         const expenseDate = dateOnly(data.date);
         if (!expenseCategories.includes(category) || !description || amount === null || !expenseDate) return invalid("Data pengeluaran tidak valid");
         const expense = await prisma.expense.create({ data: { category, description, amount, expenseDate } });
+        await recordActivity(user, { action: "expense.created", entityType: "expense", entityId: expense.id, summary: `Pengeluaran ${category} dicatat sebesar Rp ${amount.toLocaleString("id-ID")}.` });
         return NextResponse.json({ success: true, id: expense.id }, { status: 201 });
       }
       case "invoice.create": {
@@ -248,6 +256,7 @@ export async function POST(request: Request) {
         if (previous) return NextResponse.json({ error: "Tagihan untuk periode tersebut sudah ada" }, { status: 409 });
         const invoiceNumber = `INV-${periodYear}${String(periodMonth).padStart(2, "0")}-${randomUUID().slice(0, 8).toUpperCase()}`;
         const invoice = await prisma.invoice.create({ data: { invoiceNumber, tenantId: tenant.id, roomId: tenant.roomId, periodMonth, periodYear, amount: tenant.room.priceMonthly, dueDate } });
+        await recordActivity(user, { action: "invoice.created", entityType: "invoice", entityId: invoice.id, summary: `Tagihan ${invoice.invoiceNumber} dibuat untuk ${tenant.fullName}.` });
         return NextResponse.json({ success: true, id: invoice.id }, { status: 201 });
       }
       case "invoice.status": {
@@ -262,6 +271,7 @@ export async function POST(request: Request) {
             : { status, paidAt: null, paymentProof: null, paymentMethod: null, notes: "Bukti pembayaran ditolak. Silakan kirim ulang." },
         });
         if (!updated.count) return NextResponse.json({ error: "Tagihan tidak menunggu verifikasi" }, { status: 409 });
+        await recordActivity(user, { action: status === "PAID" ? "invoice.payment_verified" : "invoice.payment_rejected", entityType: "invoice", entityId: id, summary: status === "PAID" ? "Pembayaran tagihan diverifikasi dan ditandai lunas." : "Bukti pembayaran ditolak." });
         return NextResponse.json({ success: true });
       }
       case "complaint.status": {
@@ -269,6 +279,7 @@ export async function POST(request: Request) {
         const status = data.status;
         if (!id || !complaintStatuses.includes(status as typeof complaintStatuses[number])) return invalid("Status komplain tidak valid");
         await prisma.complaint.update({ where: { id }, data: { status: status as typeof complaintStatuses[number], resolvedAt: status === "RESOLVED" ? new Date() : null } });
+        await recordActivity(user, { action: "complaint.status_changed", entityType: "complaint", entityId: id, summary: `Status komplain diubah menjadi ${String(status).toLowerCase().replace("_", " ")}.` });
         return NextResponse.json({ success: true });
       }
       case "building.update": {
@@ -287,6 +298,7 @@ export async function POST(request: Request) {
         };
         if (!values.name || !values.ownerName) return invalid("Nama kost dan pengelola wajib diisi");
         await prisma.buildingConfig.upsert({ where: { id: "default" }, create: { id: "default", ...values }, update: values });
+        await recordActivity(user, { action: "building.updated", entityType: "building_config", entityId: "default", summary: "Pengaturan kost diperbarui." });
         return NextResponse.json({ success: true });
       }
       default:

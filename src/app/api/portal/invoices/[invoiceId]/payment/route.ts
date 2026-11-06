@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
+import { recordActivity } from "@/lib/activity-log";
 import { getSessionUser, isSameOrigin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -18,7 +19,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ inv
   const user = await getSessionUser();
   if (!user?.tenantId || user.role !== "TENANT") return NextResponse.json({ error: "Akses tidak diizinkan" }, { status: 403 });
   const { invoiceId } = await params;
-  const invoice = await prisma.invoice.findFirst({ where: { id: invoiceId, tenantId: user.tenantId }, select: { id: true, status: true } });
+  const invoice = await prisma.invoice.findFirst({ where: { id: invoiceId, tenantId: user.tenantId }, select: { id: true, status: true, invoiceNumber: true } });
   if (!invoice) return NextResponse.json({ error: "Tagihan tidak ditemukan" }, { status: 404 });
   if (invoice.status !== "UNPAID" && invoice.status !== "OVERDUE") return NextResponse.json({ error: "Tagihan ini sedang menunggu verifikasi atau sudah lunas" }, { status: 409 });
   if (Number(request.headers.get("content-length") || 0) > MAX_BYTES + 64 * 1024) return NextResponse.json({ error: "Ukuran file maksimal 5MB" }, { status: 413 });
@@ -48,6 +49,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ inv
       await fs.rm(filePath, { force: true });
       return NextResponse.json({ error: "Status tagihan sudah berubah. Muat ulang halaman." }, { status: 409 });
     }
+    await recordActivity(user, { action: "invoice.payment_submitted", entityType: "invoice", entityId: invoice.id, summary: `Bukti pembayaran ${invoice.invoiceNumber} dikirim untuk verifikasi.` });
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {
     if (filePath) await fs.rm(filePath, { force: true }).catch(() => undefined);

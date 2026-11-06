@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { recordActivity } from "@/lib/activity-log";
 import { getSessionUser, hashPassword, isSameOrigin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { asJsonRecord, readJsonRequest } from "@/lib/request-body";
@@ -128,6 +129,7 @@ export async function POST(request: Request) {
 
       return { tenantId: legacyId, profileId: profile.id, userId: user.id, email: user.email, isActive: user.isActive, name: fullName, phone, roomNumber };
     });
+    await recordActivity(currentUser, { action: "tenant.account_created", entityType: "tenant_account", entityId: created.userId, summary: `Akun portal dibuat untuk penghuni kamar ${created.roomNumber}.` });
     return NextResponse.json({ account: created }, { status: 201 });
   } catch (error) {
     if (error instanceof Error && error.message === "ACCOUNT_EXISTS") {
@@ -162,7 +164,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Email, status akun, atau kata sandi tidak valid." }, { status: 400 });
   }
 
-  const tenant = await prisma.tenant.findUnique({ where: { legacyId: tenantId }, select: { userId: true, status: true } });
+  const tenant = await prisma.tenant.findUnique({ where: { legacyId: tenantId }, select: { userId: true, status: true, room: { select: { roomNumber: true } } } });
   if (!tenant?.userId) return NextResponse.json({ error: "Akun penghuni tidak ditemukan." }, { status: 404 });
   if (isActive && tenant.status !== "ACTIVE") return NextResponse.json({ error: "Penghuni sudah tidak aktif; akses portal tidak dapat diaktifkan." }, { status: 400 });
 
@@ -180,6 +182,7 @@ export async function PATCH(request: Request) {
         await tx.session.deleteMany({ where: { userId: tenant.userId! } });
       }
     });
+    await recordActivity(currentUser, { action: "tenant.account_updated", entityType: "tenant_account", entityId: tenant.userId, summary: `Akun portal penghuni kamar ${tenant.room.roomNumber} diperbarui.` });
     return NextResponse.json({ success: true });
   } catch (error) {
     if (typeof error === "object" && error !== null && "code" in error && error.code === "P2002") {

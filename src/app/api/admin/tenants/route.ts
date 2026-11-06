@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
+import { recordActivity } from "@/lib/activity-log";
 import { getSessionUser, isSameOrigin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { asJsonRecord, readJsonRequest, type JsonRecord } from "@/lib/request-body";
@@ -193,6 +194,12 @@ export async function POST(request: Request) {
         result.push(item.legacyId);
       }
       return result;
+    });
+
+    await recordActivity(user, {
+      action: "tenant.saved",
+      entityType: "tenant",
+      summary: `${saved.length} data penghuni disimpan atau disinkronkan.`,
     });
 
     return NextResponse.json({ success: true, count: saved.length, legacyIds: saved });

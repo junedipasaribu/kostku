@@ -26,6 +26,27 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+.kost-floating-nav {
+  background: rgb(9 8 7 / 0.84);
+  border-color: rgb(255 255 255 / 0.12);
+  box-shadow: 0 14px 40px rgb(0 0 0 / 0.32), inset 0 1px 0 rgb(255 255 255 / 0.08);
+  -webkit-backdrop-filter: blur(24px) saturate(145%);
+  backdrop-filter: blur(24px) saturate(145%);
+}
+
+.kost-floating-menu {
+  background: rgb(14 13 12 / 0.96);
+}
+
+.kost-nav-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.kost-nav-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .kost-modal-backdrop {
   background: rgb(51 65 85 / 0.72) !important;
   backdrop-filter: blur(5px);
@@ -279,6 +300,15 @@ html[data-theme="light"] .theme-brand-header [class*="bg-white/5"] {
   color: #f8fafc !important;
 }
 
+html[data-theme="light"] .theme-brand-header .kost-floating-nav [class*="bg-white/10"],
+html[data-theme="light"] .theme-brand-header .kost-floating-menu [class*="bg-white/10"],
+html[data-theme="light"] .theme-brand-header .kost-floating-nav [class*="text-zinc-200"],
+html[data-theme="light"] .theme-brand-header .kost-floating-menu [class*="text-zinc-200"],
+html[data-theme="light"] .theme-brand-header .kost-floating-nav [class*="text-zinc-300"],
+html[data-theme="light"] .theme-brand-header .kost-floating-menu [class*="text-zinc-300"] {
+  color: #e2e8f0 !important;
+}
+
 html[data-theme="light"] [class*="border-white/"],
 html[data-theme="light"] [class*="border-zinc-800"],
 html[data-theme="light"] [class*="border-zinc-700"] {
@@ -527,4 +557,152 @@ html[data-theme="light"][data-custom-background="true"] body,
 html[data-theme="light"][data-custom-background="true"] [class~="bg-[#090807]"],
 html[data-theme="light"][data-custom-background="true"] [class~="bg-[#0c0c0e]"] {
   background-color: color-mix(in srgb, var(--user-background) 38%, #f7f6f2) !important;
+}
+
+/* Stage 1: clear, springy feedback for buttons across the app. */
+button:not(:disabled) {
+  transition: transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 220ms ease,
+    filter 180ms ease, background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+@media (hover: hover) {
+  button:not(:disabled):hover {
+    transform: translateY(-3px) scale(1.035);
+    filter: brightness(1.08);
+    box-shadow: 0 8px 18px rgb(0 0 0 / 0.25);
+  }
+
+  html[data-theme="light"] button:not(:disabled):hover {
+    box-shadow: 0 8px 18px rgb(39 35 31 / 0.16);
+  }
+}
+
+button:not(:disabled):active {
+  transform: translateY(1px) scale(0.94);
+  filter: brightness(0.96);
+  box-shadow: inset 0 2px 5px rgb(0 0 0 / 0.18);
+  transition: transform 90ms ease-out, box-shadow 90ms ease-out, filter 90ms ease-out,
+    background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+html[data-theme="light"] button:not(:disabled):active {
+  box-shadow: inset 0 2px 5px rgb(39 35 31 / 0.2);
+}
+
+button:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* Stage 2: lift important content cards on pointer hover. */
+.kost-card {
+  transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 220ms ease,
+    border-color 180ms ease;
+}
+
+@media (hover: hover) {
+  .kost-card:hover {
+    box-shadow: 0 18px 36px rgb(0 0 0 / 0.28);
+  }
+
+  html:not([data-theme="light"]) .kost-card:hover {
+    border-color: #5a5a66 !important;
+  }
+
+  html[data-theme="light"] .kost-card:hover {
+    box-shadow: 0 16px 30px rgb(39 35 31 / 0.18);
+    border-color: #aa8a5d !important;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .kost-card:hover {
+    transform: translateY(-5px) scale(1.01);
+  }
+}
+
+.kost-coverflow-card {
+  transition: transform 360ms cubic-bezier(0.22, 1, 0.36, 1), opacity 800ms ease,
+    box-shadow 240ms ease, border-color 220ms ease, filter 220ms ease;
+}
+
+@media (hover: hover) {
+  .kost-coverflow-card:hover {
+    transform: var(--kost-coverflow-base-transform) translateY(-8px) scale(1.055) !important;
+    border-color: rgb(197 168 128 / 0.9) !important;
+    box-shadow: 0 32px 72px rgb(0 0 0 / 0.72), 0 0 42px rgb(197 168 128 / 0.34) !important;
+    filter: brightness(1.1) !important;
+  }
+}
+
+/* Stage 3: reusable loading placeholders with a theme-aware shimmer. */
+.kost-skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: #27272a;
+  isolation: isolate;
+}
+
+.kost-skeleton::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-image: linear-gradient(100deg, transparent 20%, rgb(255 255 255 / 0.12) 48%, transparent 76%);
+  background-size: 220% 100%;
+  content: "";
+  animation: kost-skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+html[data-theme="light"] .kost-skeleton {
+  background-color: #e7e5e0;
+}
+
+html[data-theme="light"] .kost-skeleton::after {
+  background-image: linear-gradient(100deg, transparent 20%, rgb(255 255 255 / 0.78) 48%, transparent 76%);
+}
+
+@keyframes kost-skeleton-shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -120% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button:not(:disabled),
+  button:disabled,
+  .kost-card {
+    transition: none;
+  }
+
+  button:not(:disabled):hover,
+  button:not(:disabled):active,
+  .kost-card:hover {
+    transform: none;
+  }
+
+  .kost-coverflow-card {
+    transition: none;
+  }
+
+  .kost-coverflow-card:hover {
+    transform: var(--kost-coverflow-base-transform) !important;
+  }
+
+  button:not(:disabled):hover,
+  button:not(:disabled):active {
+    filter: none;
+    box-shadow: none;
+  }
+
+  html[data-theme="light"] button:not(:disabled):hover,
+  html[data-theme="light"] button:not(:disabled):active {
+    box-shadow: none;
+  }
+
+  .kost-skeleton::after {
+    animation: none;
+  }
 }

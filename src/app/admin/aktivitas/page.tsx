@@ -111,7 +111,17 @@ export default function AdminActivityPage() {
 
       <div className="overflow-hidden rounded-xl border border-zinc-800/80 bg-zinc-900/20">
         {isLoading ? (
-          <p className="p-8 text-center text-xs text-zinc-400">Memuat log aktivitas…</p>
+          <div role="status" aria-label="Memuat log aktivitas" className="divide-y divide-zinc-800/70">
+            {[0, 1, 2, 3].map((item) => (
+              <div key={item} aria-hidden="true" className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="w-full space-y-2 sm:max-w-md">
+                  <div className="kost-skeleton h-3.5 w-2/5 rounded" />
+                  <div className="kost-skeleton h-3 w-3/4 rounded" />
+                </div>
+                <div className="kost-skeleton h-3 w-28 rounded" />
+              </div>
+            ))}
+          </div>
         ) : error ? (
           <div className="space-y-3 p-8 text-center">
             <p role="alert" className="text-xs text-rose-400">{error}</p>

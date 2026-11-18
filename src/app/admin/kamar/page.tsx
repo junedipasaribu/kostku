@@ -297,7 +297,7 @@ export default function AdminKamarPage() {
 
       {/* Quick Stats Banner */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-3.5 rounded-xl bg-zinc-900/30 border border-zinc-800/80">
+        <div className="kost-card p-3.5 rounded-xl bg-zinc-900/30 border border-zinc-800/80">
           <span className="text-[11px] text-zinc-400 block font-medium">Total Kamar</span>
           <div className="flex items-baseline gap-2 mt-1">
             <span className="text-xl font-semibold text-white">{totalRooms}</span>
@@ -305,7 +305,7 @@ export default function AdminKamarPage() {
           </div>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-zinc-900/30 border border-zinc-800/80">
+        <div className="kost-card p-3.5 rounded-xl bg-zinc-900/30 border border-zinc-800/80">
           <span className="text-[11px] text-emerald-400 block font-medium">Kamar Tersedia</span>
           <div className="flex items-baseline gap-2 mt-1">
             <span className="text-xl font-semibold text-emerald-400">{availableRooms}</span>
@@ -313,7 +313,7 @@ export default function AdminKamarPage() {
           </div>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-zinc-900/30 border border-zinc-800/80">
+        <div className="kost-card p-3.5 rounded-xl bg-zinc-900/30 border border-zinc-800/80">
           <span className="text-[11px] text-zinc-300 block font-medium">Kamar Terisi</span>
           <div className="flex items-baseline gap-2 mt-1">
             <span className="text-xl font-semibold text-white">{occupiedRooms}</span>
@@ -321,7 +321,7 @@ export default function AdminKamarPage() {
           </div>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-zinc-900/30 border border-zinc-800/80">
+        <div className="kost-card p-3.5 rounded-xl bg-zinc-900/30 border border-zinc-800/80">
           <span className="text-[11px] text-amber-300 block font-medium">Dalam Perbaikan</span>
           <div className="flex items-baseline gap-2 mt-1">
             <span className="text-xl font-semibold text-amber-300">{maintenanceRooms}</span>
@@ -397,7 +397,7 @@ export default function AdminKamarPage() {
             return (
               <div
                 key={room.id}
-                className="group rounded-xl border border-zinc-800/80 bg-zinc-900/30 p-4 flex flex-col justify-between hover:border-zinc-700 transition-all hover:bg-zinc-900/40"
+                className="kost-card group rounded-xl border border-zinc-800/80 bg-zinc-900/30 p-4 flex flex-col justify-between hover:border-zinc-700 transition-all hover:bg-zinc-900/40"
               >
                 <div>
                   {/* Image & Badges */}

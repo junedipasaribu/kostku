@@ -78,14 +78,14 @@ export default function AdminPengeluaranPage() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/40 p-4"><span className="text-xs text-zinc-400">Pemasukan bulan ini</span><p className="mt-1 text-xl font-semibold text-emerald-400">Rp {monthlyIncome.toLocaleString("id-ID")}</p></div>
-        <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/40 p-4"><span className="text-xs text-zinc-400">Pengeluaran bulan ini</span><p className="mt-1 text-xl font-semibold text-rose-400">Rp {monthlyExpense.toLocaleString("id-ID")}</p></div>
-        <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/40 p-4"><span className="text-xs text-zinc-400">Arus kas bersih</span><p className={`mt-1 text-xl font-semibold ${monthlyNet >= 0 ? "text-white" : "text-rose-400"}`}>Rp {monthlyNet.toLocaleString("id-ID")}</p></div>
+        <div className="kost-card rounded-xl border border-zinc-800/80 bg-zinc-900/40 p-4"><span className="text-xs text-zinc-400">Pemasukan bulan ini</span><p className="mt-1 text-xl font-semibold text-emerald-400">Rp {monthlyIncome.toLocaleString("id-ID")}</p></div>
+        <div className="kost-card rounded-xl border border-zinc-800/80 bg-zinc-900/40 p-4"><span className="text-xs text-zinc-400">Pengeluaran bulan ini</span><p className="mt-1 text-xl font-semibold text-rose-400">Rp {monthlyExpense.toLocaleString("id-ID")}</p></div>
+        <div className="kost-card rounded-xl border border-zinc-800/80 bg-zinc-900/40 p-4"><span className="text-xs text-zinc-400">Arus kas bersih</span><p className={`mt-1 text-xl font-semibold ${monthlyNet >= 0 ? "text-white" : "text-rose-400"}`}>Rp {monthlyNet.toLocaleString("id-ID")}</p></div>
       </div>
 
       {/* Chart: Breakdown per Kategori */}
       {Object.keys(byCategory).length > 0 && (
-        <div className="p-5 rounded-xl bg-zinc-900/30 border border-zinc-800/80">
+        <div className="kost-card p-5 rounded-xl bg-zinc-900/30 border border-zinc-800/80">
           <h2 className="text-sm font-semibold text-white mb-4">Breakdown per Kategori</h2>
           <div className="space-y-3">
             {Object.entries(byCategory)

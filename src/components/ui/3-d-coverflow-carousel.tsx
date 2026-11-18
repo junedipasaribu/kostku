@@ -179,8 +179,10 @@ export function CoverFlowCarousel({
             return (
               <div
                 key={idx}
+                className="kost-coverflow-card"
                 onClick={() => !isCenter && goToSlide(idx)}
                 style={{
+                  "--kost-coverflow-base-transform": transform,
                   position: "absolute",
                   width: "330px",
                   height: "500px",
@@ -188,17 +190,17 @@ export function CoverFlowCarousel({
                   overflow: "hidden",
                   backgroundColor: "#171311",
                   border: "1px solid rgba(255, 255, 255, 0.12)",
-                  transform,
+                  transform: "var(--kost-coverflow-base-transform)",
                   opacity,
                   zIndex,
                   filter,
                   transformOrigin: "center center",
-                  transition: "all 800ms cubic-bezier(0.25, 1, 0.5, 1)",
+                  transition: "transform 360ms cubic-bezier(0.22, 1, 0.36, 1), opacity 800ms cubic-bezier(0.25, 1, 0.5, 1), box-shadow 240ms ease, border-color 220ms ease, filter 220ms ease",
                   boxShadow: isCenter
                     ? "0 25px 60px rgba(0,0,0,0.9), 0 0 35px rgba(197,168,128,0.25)"
                     : "0 15px 35px rgba(0,0,0,0.5)",
                   cursor: isCenter ? "default" : "pointer",
-                }}
+                } as React.CSSProperties}
               >
                 {/* Photo */}
                 <img

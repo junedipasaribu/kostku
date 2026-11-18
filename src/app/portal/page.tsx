@@ -78,14 +78,14 @@ export default async function TenantHomePage() {
         </div>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <section className="p-5 rounded-xl bg-zinc-900/30 border border-zinc-800/80 space-y-3">
+        <section className="kost-card p-5 rounded-xl bg-zinc-900/30 border border-zinc-800/80 space-y-3">
           <div className="flex items-center gap-2 text-white font-semibold"><Home className="w-4 h-4 text-[#c5a880]" /> Informasi kamar</div>
           <p className="text-sm text-zinc-200">Kamar {tenant.room.roomNumber} · {tenant.room.type}</p>
           <p className="text-xs text-zinc-400">{tenant.room.size || "Ukuran belum dicatat"}</p>
           <p className="text-xs text-zinc-400">Sewa: Rp {tenant.room.priceMonthly.toLocaleString("id-ID")} / bulan</p>
           {tenant.room.facilities.length > 0 && <p className="text-xs text-zinc-400">Fasilitas: {tenant.room.facilities.join(", ")}</p>}
         </section>
-        <section className="p-5 rounded-xl bg-zinc-900/30 border border-zinc-800/80 space-y-3">
+        <section className="kost-card p-5 rounded-xl bg-zinc-900/30 border border-zinc-800/80 space-y-3">
           <div className="flex items-center gap-2 text-white font-semibold"><CalendarDays className="w-4 h-4 text-[#c5a880]" /> Data sewa</div>
           <p className="text-xs text-zinc-400">Mulai tinggal: {tenant.startDate.toLocaleDateString("id-ID", { dateStyle: "long", timeZone: "UTC" })}</p>
           <p className="text-xs text-zinc-400">Deposit: Rp {tenant.depositAmount.toLocaleString("id-ID")} · {tenant.depositStatus === "HELD" ? "Ditahan" : tenant.depositStatus === "REFUNDED" ? "Dikembalikan" : "Dipotong"}</p>

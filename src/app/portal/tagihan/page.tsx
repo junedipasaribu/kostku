@@ -31,7 +31,7 @@ export default async function TenantBillingPage() {
         </aside>
       )}
       {invoices.length ? invoices.map((invoice) => (
-        <article key={invoice.invoiceNumber} className="rounded-xl border border-zinc-800/80 bg-zinc-900/30 p-4">
+        <article key={invoice.invoiceNumber} className="kost-card rounded-xl border border-zinc-800/80 bg-zinc-900/30 p-4">
           <div className="flex items-start justify-between gap-3">
             <div><h2 className="text-sm font-medium text-white">Sewa {months[invoice.periodMonth - 1]} {invoice.periodYear}</h2><p className="mt-1 text-[11px] text-zinc-500">{invoice.invoiceNumber}</p></div>
             <span className={`rounded px-2 py-1 text-[10px] ${invoice.status === "PAID" ? "bg-emerald-950 text-emerald-300" : invoice.status === "OVERDUE" ? "bg-rose-950 text-rose-300" : "bg-amber-950 text-amber-300"}`}>{invoice.status === "PAID" ? "Lunas" : invoice.status === "PENDING_VERIFICATION" ? "Menunggu verifikasi" : invoice.status === "OVERDUE" ? "Terlambat" : "Belum dibayar"}</span>

@@ -174,7 +174,7 @@ export default function AdminOverviewPage() {
       {/* 2. Top Metrics (Subtle, Clean Typography) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Okupansi */}
-        <div className="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/80">
+        <div className="kost-card p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/80">
           <span className="text-xs font-medium text-zinc-400">Okupansi Kamar</span>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-2xl font-semibold text-white tracking-tight">{occupiedRooms}</span>
@@ -188,7 +188,7 @@ export default function AdminOverviewPage() {
         </div>
 
         {/* Card 2: Deposit */}
-        <div className="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/80">
+        <div className="kost-card p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/80">
           <span className="text-xs font-medium text-zinc-400">Uang Jaminan (Deposit)</span>
           <div className="mt-2">
             <span className="text-2xl font-semibold text-white tracking-tight">
@@ -201,7 +201,7 @@ export default function AdminOverviewPage() {
         </div>
 
         {/* Card 3: Piutang */}
-        <div className="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/80">
+        <div className="kost-card p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/80">
           <span className="text-xs font-medium text-zinc-400">Tagihan Pending</span>
           <div className="mt-2">
             <span className="text-2xl font-semibold text-white tracking-tight">
@@ -214,7 +214,7 @@ export default function AdminOverviewPage() {
         </div>
 
         {/* Card 4: Arus Kas */}
-        <div className="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/80">
+        <div className="kost-card p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/80">
           <span className="text-xs font-medium text-zinc-400">Pemasukan Lunas</span>
           <div className="mt-2">
             <span className="text-2xl font-semibold text-white tracking-tight">
@@ -233,7 +233,7 @@ export default function AdminOverviewPage() {
       {/* 3. Action Required Section (Minimalist, No Rainbow Glowing Boxes) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Verification Pending */}
-        <div className="p-5 rounded-xl bg-zinc-900/30 border border-zinc-800/80 flex flex-col justify-between">
+        <div className="kost-card p-5 rounded-xl bg-zinc-900/30 border border-zinc-800/80 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800/60 mb-3">
               <span className="text-xs font-medium text-zinc-300 flex items-center gap-1.5">
@@ -295,7 +295,7 @@ export default function AdminOverviewPage() {
         </div>
 
         {/* Complaints Pending */}
-        <div className="p-5 rounded-xl bg-zinc-900/30 border border-zinc-800/80 flex flex-col justify-between">
+        <div className="kost-card p-5 rounded-xl bg-zinc-900/30 border border-zinc-800/80 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800/60 mb-3">
               <span className="text-xs font-medium text-zinc-300">
@@ -335,7 +335,7 @@ export default function AdminOverviewPage() {
       </div>
 
       {/* 4. Denah Kamar Visual (Clean Monochromatic Grid) */}
-      <div className="p-5 sm:p-6 rounded-xl bg-zinc-900/30 border border-zinc-800/80">
+      <div className="kost-card p-5 sm:p-6 rounded-xl bg-zinc-900/30 border border-zinc-800/80">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-sm font-semibold text-white">Status Kamar Gedung</h2>
@@ -396,7 +396,7 @@ export default function AdminOverviewPage() {
       </div>
 
       {/* 5. Pending Invoices Table */}
-      <div className="p-5 sm:p-6 rounded-xl bg-zinc-900/30 border border-zinc-800/80">
+      <div className="kost-card p-5 sm:p-6 rounded-xl bg-zinc-900/30 border border-zinc-800/80">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-sm font-semibold text-white">Tagihan Belum Lunas</h2>
@@ -446,7 +446,7 @@ export default function AdminOverviewPage() {
       </div>
 
       {/* 6. Laporan Keuangan Chart */}
-      <div className="p-5 sm:p-6 rounded-xl bg-zinc-900/30 border border-zinc-800/80">
+      <div className="kost-card p-5 sm:p-6 rounded-xl bg-zinc-900/30 border border-zinc-800/80">
         <div className="flex items-center justify-between mb-5">
           <div>
             <h2 className="text-sm font-semibold text-white">Ringkasan Keuangan Bulan Ini</h2>

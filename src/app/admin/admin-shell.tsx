@@ -12,7 +12,6 @@ import {
   Wallet,
   AlertCircle,
   LogOut,
-  Building2,
   Menu,
   X,
   ExternalLink,
@@ -32,7 +31,7 @@ export default function AdminLayout({
   const pathname = usePathname();
   const router = useRouter();
   const { building, logout, rooms, invoices, complaints, paymentAlerts, dismissPaymentAlert } = useKost();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isNavigationOpen, setIsNavigationOpen] = useState(false);
 
   const pendingVerificationCount = invoices.filter((i) => i.status === "PENDING_VERIFICATION").length;
   const openComplaintsCount = complaints.filter((c) => c.status !== "RESOLVED").length;
@@ -83,6 +82,17 @@ export default function AdminLayout({
     },
   ];
 
+  const shortNavLabels: Record<string, string> = {
+    "/admin": "Ringkasan",
+    "/admin/kamar": "Kamar",
+    "/admin/penghuni": "Penghuni",
+    "/admin/tagihan": "Tagihan",
+    "/admin/pengeluaran": "Cashflow",
+    "/admin/komplain": "Komplain",
+    "/admin/aktivitas": "Aktivitas",
+    "/admin/pengaturan": "Pengaturan",
+  };
+
   const handleLogout = async () => {
     await logout();
     window.dispatchEvent(new Event("kostku:session-changed"));
@@ -91,7 +101,7 @@ export default function AdminLayout({
   };
 
   return (
-    <div className="min-h-screen bg-[#0c0c0e] text-zinc-100 flex flex-col md:flex-row antialiased">
+    <div className="min-h-screen bg-[#0c0c0e] text-zinc-100 antialiased">
       {paymentAlerts.length > 0 && (
         <div className="fixed right-4 top-4 z-[70] w-[min(380px,calc(100vw-2rem))] space-y-2" aria-live="polite">
           {paymentAlerts.map((alert) => (
@@ -113,54 +123,14 @@ export default function AdminLayout({
           ))}
         </div>
       )}
-      {/* Mobile Header */}
-      <div className="md:hidden flex items-center justify-between px-5 py-3.5 bg-zinc-950 border-b border-zinc-800/80 sticky top-0 z-50">
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center text-white font-bold text-xs">
-            K
-          </div>
-          <span className="font-semibold text-white text-sm tracking-tight">
-            Kostku <span className="text-zinc-400 font-normal text-xs">Admin</span>
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <ThemeToggle compact className="px-2.5" />
-          <BackgroundPicker compact />
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white"
-          >
-            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-        </div>
-      </div>
+      <header className="theme-brand-header sticky top-0 z-50 px-3 pt-3 sm:px-5">
+        <div className="kost-floating-nav relative mx-auto flex h-16 max-w-[1680px] items-center gap-3 rounded-full border px-3 sm:px-5">
+          <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label="Kostku Admin">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#c5a880] to-[#8a6839] text-sm font-black text-black shadow-lg shadow-[#c5a880]/20">K</span>
+            <span className="hidden text-sm font-semibold tracking-tight text-white sm:inline">Kostku <span className="font-normal text-zinc-400">Admin</span></span>
+          </Link>
 
-      {/* Minimalist Sidebar */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-zinc-950 border-r border-zinc-800/80 p-4 flex flex-col justify-between transition-transform duration-200 md:static md:translate-x-0 ${
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="space-y-6">
-          {/* Brand */}
-          <div className="px-2 pt-1 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-7 h-7 rounded-lg bg-white text-black flex items-center justify-center font-bold text-xs tracking-tight">
-                K
-              </div>
-              <div>
-                <span className="text-sm font-semibold text-white tracking-tight">
-                  Kostku
-                </span>
-                <span className="block text-[11px] text-zinc-500 font-medium">
-                  {building.name}
-                </span>
-              </div>
-            </Link>
-          </div>
-
-          {/* Nav List */}
-          <nav className="space-y-1">
+          <nav aria-label="Navigasi admin" className="kost-nav-scrollbar hidden min-w-0 flex-1 items-center gap-1 overflow-x-auto md:flex">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
@@ -168,25 +138,19 @@ export default function AdminLayout({
                 <Link
                   key={item.href}
                   href={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                  title={item.label}
+                  onClick={() => setIsNavigationOpen(false)}
+                  className={`flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-2 text-[11px] font-medium transition-colors 2xl:gap-2 2xl:px-3 ${
                     isActive
-                      ? "bg-zinc-800/90 text-white font-semibold"
-                      : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60"
+                      ? "border-white/15 bg-white/10 text-white shadow-inner"
+                      : "border-transparent text-zinc-400 hover:border-white/10 hover:bg-white/5 hover:text-zinc-100"
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-zinc-400"}`} />
-                    <span>{item.label}</span>
-                  </div>
+                  <Icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-[#e2c59d]" : "text-zinc-500"}`} />
+                  <span className="2xl:hidden">{shortNavLabels[item.href]}</span>
+                  <span className="hidden 2xl:inline">{item.label}</span>
                   {item.badge && (
-                    <span
-                      className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
-                        isActive
-                          ? "bg-zinc-700 text-zinc-200"
-                          : "bg-zinc-900 text-zinc-400 border border-zinc-800"
-                      }`}
-                    >
+                    <span className={`min-w-4 rounded-full px-1 text-center text-[9px] font-mono ${isActive ? "bg-white/10 text-white" : "bg-white/10 text-zinc-400"}`}>
                       {item.badge}
                     </span>
                   )}
@@ -194,39 +158,63 @@ export default function AdminLayout({
               );
             })}
           </nav>
-        </div>
 
-        {/* Footer Profile */}
-        <div className="pt-4 border-t border-zinc-800/80 space-y-2">
-          <ThemeToggle className="w-full" />
-          <BackgroundPicker className="w-full" placement="top" />
-          <div className="px-3 py-2 rounded-lg bg-zinc-900/40 border border-zinc-800/60 flex items-center justify-between">
-            <div className="truncate">
-              <p className="text-xs font-medium text-zinc-200 truncate">{user.name}</p>
-              <p className="text-[10px] text-zinc-500">Pengelola</p>
-            </div>
+          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <ThemeToggle compact className="rounded-full px-2.5" />
+            <BackgroundPicker compact className="rounded-full" placement="bottom" />
             <button
-              onClick={handleLogout}
-              title="Logout"
-              className="p-1 text-zinc-500 hover:text-zinc-300 transition-colors"
+              type="button"
+              aria-label={isNavigationOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
+              aria-expanded={isNavigationOpen}
+              aria-controls="admin-floating-menu"
+              onClick={() => setIsNavigationOpen((open) => !open)}
+              className="inline-flex h-9 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 text-zinc-200 transition-colors hover:bg-white/10 sm:px-3"
             >
-              <LogOut className="w-3.5 h-3.5" />
+              {isNavigationOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+              <span className="hidden max-w-28 truncate text-xs font-medium sm:inline">{user.name}</span>
             </button>
           </div>
 
-          <Link
-            href="/"
-            target="_blank"
-            className="w-full py-1.5 px-3 rounded-lg text-zinc-400 hover:text-zinc-200 text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors"
-          >
-            <span>Buka Website Publik</span>
-            <ExternalLink className="w-3 h-3" />
-          </Link>
+          {isNavigationOpen && (
+            <div id="admin-floating-menu" className="kost-floating-menu absolute left-1 right-1 top-[calc(100%+0.65rem)] z-50 max-h-[calc(100dvh-6rem)] overflow-y-auto rounded-3xl border border-white/10 p-3 shadow-2xl backdrop-blur-2xl md:left-auto md:right-0 md:w-80">
+              <nav aria-label="Navigasi admin seluler" className="space-y-1 md:hidden">
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setIsNavigationOpen(false)}
+                      className={`flex items-center justify-between rounded-2xl px-3 py-2.5 text-xs font-medium transition-colors ${isActive ? "bg-white/10 text-white" : "text-zinc-300 hover:bg-white/5 hover:text-white"}`}
+                    >
+                      <span className="flex items-center gap-2.5"><Icon className="h-4 w-4" />{item.label}</span>
+                      {item.badge && <span className="rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] text-zinc-300">{item.badge}</span>}
+                    </Link>
+                  );
+                })}
+              </nav>
+
+              <div className="mt-1 flex items-center justify-between gap-3 border-t border-white/10 px-2 py-3 md:mt-0 md:border-t-0 md:pt-1">
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-semibold text-white">{user.name}</p>
+                  <p className="truncate text-[10px] text-zinc-400">{building.name} · Pengelola</p>
+                </div>
+                <button type="button" onClick={handleLogout} title="Logout" aria-label="Logout" className="rounded-full p-2 text-zinc-400 hover:bg-white/10 hover:text-white">
+                  <LogOut className="h-4 w-4" />
+                </button>
+              </div>
+
+              <Link href="/" target="_blank" onClick={() => setIsNavigationOpen(false)} className="flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2.5 text-xs font-medium text-zinc-200 transition-colors hover:bg-white/10 hover:text-white">
+                Buka Website Publik <ExternalLink className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          )}
         </div>
-      </aside>
+      </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 min-w-0 p-6 sm:p-8 lg:p-10 overflow-y-auto overflow-x-hidden max-w-6xl mx-auto w-full">
+      <main className="min-w-0 p-6 sm:p-8 lg:p-10 overflow-x-hidden max-w-6xl mx-auto w-full">
         {children}
       </main>
     </div>

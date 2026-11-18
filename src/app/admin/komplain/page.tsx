@@ -42,7 +42,7 @@ export default function AdminKomplainPage() {
           return (
             <div
               key={c.id}
-              className="p-4 rounded-xl border border-zinc-800/80 bg-zinc-900/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-zinc-700 transition-colors"
+              className="kost-card p-4 rounded-xl border border-zinc-800/80 bg-zinc-900/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-zinc-700 transition-colors"
             >
               <div className="space-y-1">
                 <div className="flex items-center gap-2">

@@ -24,12 +24,15 @@ import {
   User,
   HelpCircle,
   Home as HomeIcon,
+  Menu,
+  X,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { BackgroundPicker } from "@/components/ui/background-picker";
 
 export default function Home() {
   const [site, setSite] = useState<{ building: Pick<BuildingInfo, "name" | "tagline" | "address" | "ownerPhone" | "rules" | "sharedFacilities"> | null; rooms: RoomData[] }>({ building: null, rooms: [] });
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const whatsappNumber = site.building?.ownerPhone ?? "";
 
   useEffect(() => {
@@ -62,44 +65,79 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#090807] text-zinc-100 selection:bg-[#c5a880] selection:text-black">
       {/* 1. Header / Navbar */}
-      <header className="theme-brand-header sticky top-0 z-50 backdrop-blur-xl bg-[#090807]/80 border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#c5a880] to-[#8a6839] flex items-center justify-center text-black font-black text-xl shadow-lg shadow-[#c5a880]/20">
+      <header className="theme-brand-header sticky top-0 z-50 px-3 pt-3 sm:px-5">
+        <div className="kost-floating-nav relative mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 rounded-full border px-3 sm:gap-4 sm:px-5">
+          <div className="flex shrink-0 items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#c5a880] to-[#8a6839] text-lg font-black text-black shadow-lg shadow-[#c5a880]/20 sm:h-10 sm:w-10 sm:text-xl">
               K
             </div>
-            <div>
-              <span className="text-xl font-extrabold tracking-wider text-white">
-                {site.building?.name || "Kostku"}
-              </span>
-            </div>
+            <span className="text-lg font-extrabold tracking-wide text-white sm:text-xl sm:tracking-wider">
+              {site.building?.name || "Kostku"}
+            </span>
           </div>
 
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-300">
+          <nav className="hidden items-center gap-5 text-xs font-medium text-zinc-300 md:flex lg:gap-7 lg:text-sm">
             <a href="#kamar" className="hover:text-[#c5a880] transition-colors">Tipe Kamar</a>
             <a href="#fasilitas" className="hover:text-[#c5a880] transition-colors">Fasilitas</a>
             <a href="#peraturan" className="hover:text-[#c5a880] transition-colors">Tata Tertib</a>
             <a href="#lokasi" className="hover:text-[#c5a880] transition-colors">Lokasi</a>
           </nav>
 
-          <div className="flex items-center gap-3">
-            <ThemeToggle compact className="px-2.5 sm:px-3" />
-            <BackgroundPicker compact />
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+            <ThemeToggle compact className="rounded-full px-2.5 sm:px-3" />
+            <BackgroundPicker compact className="rounded-full" />
             <Link
               href="/portal"
-              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/5 hover:bg-white/10 text-white border border-white/10 transition-colors flex items-center gap-1.5"
+              aria-label="Portal Penghuni"
+              className="hidden items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3.5 py-2 text-xs font-bold text-white transition-colors hover:bg-white/10 lg:inline-flex"
             >
               <User className="w-3.5 h-3.5 text-emerald-400" />
               <span>Portal Penghuni</span>
             </Link>
             <Link
               href="/admin"
-              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-[#c5a880] hover:bg-[#d6bc96] text-black shadow-md shadow-[#c5a880]/20 transition-all flex items-center gap-1.5"
+              aria-label="Dashboard Admin"
+              className="hidden items-center gap-1.5 rounded-full bg-[#c5a880] px-3.5 py-2 text-xs font-bold text-black shadow-md shadow-[#c5a880]/20 transition-all hover:bg-[#d6bc96] lg:inline-flex"
             >
               <ShieldCheck className="w-3.5 h-3.5" />
               <span>Dashboard Admin</span>
             </Link>
+            <button
+              type="button"
+              aria-label={isMobileMenuOpen ? "Tutup navigasi" : "Buka navigasi"}
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="kost-public-navigation"
+              onClick={() => setIsMobileMenuOpen((open) => !open)}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-zinc-200 hover:bg-white/10 lg:hidden"
+            >
+              {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            </button>
           </div>
+
+          {isMobileMenuOpen && (
+            <div id="kost-public-navigation" className="kost-floating-menu absolute left-1 right-1 top-[calc(100%+0.6rem)] z-50 rounded-3xl border border-white/10 p-3 shadow-2xl backdrop-blur-2xl lg:hidden">
+              <nav className="grid grid-cols-2 gap-1 md:hidden">
+                {[
+                  ["Tipe Kamar", "#kamar"],
+                  ["Fasilitas", "#fasilitas"],
+                  ["Tata Tertib", "#peraturan"],
+                  ["Lokasi", "#lokasi"],
+                ].map(([label, href]) => (
+                  <a key={href} href={href} onClick={() => setIsMobileMenuOpen(false)} className="rounded-2xl px-3 py-2.5 text-xs font-medium text-zinc-200 transition-colors hover:bg-white/10 hover:text-[#e7c99e]">
+                    {label}
+                  </a>
+                ))}
+              </nav>
+              <div className="mt-2 grid grid-cols-2 gap-2 border-t border-white/10 pt-3">
+                <Link href="/portal" onClick={() => setIsMobileMenuOpen(false)} className="inline-flex items-center justify-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-2.5 text-xs font-semibold text-white hover:bg-white/10">
+                  <User className="h-3.5 w-3.5 text-emerald-400" /> Portal
+                </Link>
+                <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)} className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#c5a880] px-3 py-2.5 text-xs font-bold text-black hover:bg-[#d6bc96]">
+                  <ShieldCheck className="h-3.5 w-3.5" /> Admin
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </header>
 
@@ -140,19 +178,19 @@ export default function Home() {
 
         {/* Quick Highlights / Badges */}
         <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl mx-auto text-left">
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5">
+          <div className="kost-card p-4 rounded-2xl bg-white/[0.03] border border-white/5">
             <span className="text-2xl font-black text-[#c5a880]">100 Mbps</span>
             <p className="text-xs text-zinc-400 mt-1">Dedicated Fiber Optic</p>
           </div>
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5">
+          <div className="kost-card p-4 rounded-2xl bg-white/[0.03] border border-white/5">
             <span className="text-2xl font-black text-[#c5a880]">24 Jam</span>
             <p className="text-xs text-zinc-400 mt-1">CCTV & Akses Mandiri</p>
           </div>
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5">
+          <div className="kost-card p-4 rounded-2xl bg-white/[0.03] border border-white/5">
             <span className="text-2xl font-black text-[#c5a880]">Water Heater</span>
             <p className="text-xs text-zinc-400 mt-1">Kamar Mandi Dalam</p>
           </div>
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5">
+          <div className="kost-card p-4 rounded-2xl bg-white/[0.03] border border-white/5">
             <span className="text-2xl font-black text-[#c5a880]">Parkir Luas</span>
             <p className="text-xs text-zinc-400 mt-1">Mobil & Motor Beratap</p>
           </div>
@@ -184,7 +222,7 @@ export default function Home() {
         {site.rooms.length ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {site.rooms.map((room) => (
-              <article key={room.id} className="rounded-3xl bg-zinc-900/50 border border-white/10 p-6 flex flex-col hover:border-[#c5a880]/50 transition-all group">
+              <article key={room.id} className="kost-card rounded-3xl bg-zinc-900/50 border border-white/10 p-6 flex flex-col hover:border-[#c5a880]/50 transition-all group">
                 <div className="relative h-56 rounded-2xl overflow-hidden mb-5 bg-zinc-950">
                   {room.image && <img src={room.image} alt={`Kamar ${room.roomNumber}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />}
                   <span className="absolute top-3 right-3 px-3 py-1 rounded-full bg-emerald-950/90 border border-emerald-500/40 text-emerald-300 text-xs font-bold">Tersedia</span>
@@ -213,7 +251,7 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {site.building.sharedFacilities.map((facility) => (
-                <div key={facility} className="p-6 rounded-2xl bg-white/[0.02] border border-white/5">
+                <div key={facility} className="kost-card p-6 rounded-2xl bg-white/[0.02] border border-white/5">
                   <CheckCircle2 className="w-7 h-7 text-[#c5a880] mb-4" />
                   <h3 className="text-base font-bold text-white">{facility}</h3>
                 </div>

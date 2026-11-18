@@ -34,7 +34,7 @@ export default function AdminPengaturanPage() {
         <h1 className="text-xl font-semibold text-white">Pengaturan Kost</h1>
         <p className="mt-1 text-xs text-zinc-400">Informasi kost, kontak pengelola, dan tujuan pembayaran yang ditampilkan di aplikasi.</p>
       </header>
-      <form onSubmit={submit} className="space-y-4 rounded-xl border border-zinc-800/80 bg-zinc-900/30 p-5">
+      <form onSubmit={submit} className="kost-card space-y-4 rounded-xl border border-zinc-800/80 bg-zinc-900/30 p-5">
         {([
           ["name", "Nama kost", true], ["tagline", "Slogan", false], ["address", "Alamat", false],
           ["ownerName", "Nama pengelola", true], ["ownerPhone", "WhatsApp pengelola", false],

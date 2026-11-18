@@ -67,8 +67,18 @@ export default function TenantComplaintPage() {
       </form>
       <div className="space-y-3">
         <h2 className="text-sm font-semibold text-white">Riwayat laporan</h2>
-        {loading ? <p className="text-xs text-zinc-500">Memuat…</p> : complaints.length ? complaints.map((complaint) => (
-          <article key={complaint.id} className="rounded-xl border border-zinc-800/80 bg-zinc-900/30 p-4">
+        {loading ? (
+          <div role="status" aria-label="Memuat riwayat laporan" className="space-y-3">
+            {[0, 1].map((item) => (
+              <div key={item} aria-hidden="true" className="rounded-xl border border-zinc-800/80 bg-zinc-900/30 p-4">
+                <div className="kost-skeleton h-4 w-2/5 rounded" />
+                <div className="kost-skeleton mt-3 h-3 w-full rounded" />
+                <div className="kost-skeleton mt-2 h-3 w-3/4 rounded" />
+              </div>
+            ))}
+          </div>
+        ) : complaints.length ? complaints.map((complaint) => (
+          <article key={complaint.id} className="kost-card rounded-xl border border-zinc-800/80 bg-zinc-900/30 p-4">
             <div className="flex items-start justify-between gap-3"><h3 className="text-sm font-medium text-white">{complaint.title}</h3><span className="shrink-0 text-[10px] text-amber-300">{statusLabel(complaint.status)}</span></div>
             <p className="mt-2 whitespace-pre-wrap text-xs text-zinc-400">{complaint.description}</p>
             <p className="mt-3 text-[10px] text-zinc-500">{complaint.date}</p>
